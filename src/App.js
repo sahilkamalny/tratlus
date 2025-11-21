@@ -48,7 +48,8 @@ const ACTIVITY_CATEGORIES = [
   },
 ];
 
-const HOURS = Array.from({ length: 24 }, (_, i) => i);
+// UPDATED: Hours now go from 0 to 24 to include the bottom "12 AM"
+const HOURS = Array.from({ length: 25 }, (_, i) => i);
 
 const ActivityBlock = ({ category, onDragStart }) => {
   const cat = ACTIVITY_CATEGORIES.find(c => c.id === category);
@@ -366,10 +367,11 @@ const DayView = ({ date, blocks, onDrop, onDeleteBlock, onEditBlock, onBackToCal
         onDragStart={(e) => handleBlockDragStart(e, index)}
         // Block is 1px below line, 1px shorter for visual separation
         style={{ height: `${height - 2}px`, top: `${top + 1}px` }} 
+        // UPDATED: Removed 'border-l-4 border-black/10'
         className={`
           ${cat.color} text-white rounded-md px-2 shadow-md transition-all 
           absolute left-1 right-1 group flex flex-col justify-center overflow-hidden
-          border-l-4 border-black/10 ring-1 ring-black/5
+          ring-1 ring-black/5
           ${isInteracting ? 'pointer-events-none' : 'cursor-move hover:ring-2 hover:ring-white/50 hover:shadow-lg hover:z-10'}
           ${isBeingDragged ? 'opacity-40 scale-95' : 'opacity-100'}
         `}
@@ -462,7 +464,7 @@ const DayView = ({ date, blocks, onDrop, onDeleteBlock, onEditBlock, onBackToCal
       <div className="flex-1 overflow-y-auto relative scrollbar-hide rounded-2xl border border-slate-200 bg-slate-50/50">
         <div 
             className="flex min-h-full relative" 
-            // FIXED HEIGHT CALCULATION: Added clearance for top and bottom.
+            // UPDATED HEIGHT CALCULATION: 24 hours * height + 2 * clearance (top and bottom)
             style={{ height: `${(24 * COMPACT_PIXELS_PER_HOUR) + (2 * VERTICAL_CLEARANCE)}px` }}
         >
             
@@ -471,13 +473,12 @@ const DayView = ({ date, blocks, onDrop, onDeleteBlock, onEditBlock, onBackToCal
                 {HOURS.map(hour => (
                     <div
                         key={hour}
-                        // FIXED TOP CALCULATION: Added clearance
                         style={{ top: `${(hour * COMPACT_PIXELS_PER_HOUR) + VERTICAL_CLEARANCE}px` }}
                         className="absolute right-0 w-full text-right pr-2"
                     >
-                        {/* FIXED SPAN: Removed -mt-2. Span aligns with the top of the hour line */}
                         <span className="text-[10px] font-bold text-slate-400 block">
-                            {hour === 0 ? '12 AM' : hour < 12 ? `${hour} AM` : hour === 12 ? '12 PM' : `${hour - 12} PM`}
+                            {/* UPDATED: Logic for 0 and 24 */}
+                            {hour === 0 || hour === 24 ? '12 AM' : hour < 12 ? `${hour} AM` : hour === 12 ? '12 PM' : `${hour - 12} PM`}
                         </span>
                     </div>
                 ))}
@@ -497,17 +498,15 @@ const DayView = ({ date, blocks, onDrop, onDeleteBlock, onEditBlock, onBackToCal
                     {HOURS.map(hour => (
                         <div
                             key={`h-${hour}`}
-                            // FIXED TOP CALCULATION: Added clearance
                             style={{ top: `${(hour * COMPACT_PIXELS_PER_HOUR) + VERTICAL_CLEARANCE}px` }}
                             className="absolute left-0 right-0 border-t border-slate-200/80 w-full"
                         />
                     ))}
 
-                    {/* 30 Minute Lines (Dotted) */}
-                    {HOURS.map(hour => (
+                    {/* 30 Minute Lines (Dotted) - Don't draw after 24 */}
+                    {HOURS.filter(h => h < 24).map(hour => (
                         <div
                             key={`m-${hour}`}
-                            // FIXED TOP CALCULATION: Added clearance
                             style={{ top: `${(hour * COMPACT_PIXELS_PER_HOUR) + (COMPACT_PIXELS_PER_HOUR / 2) + VERTICAL_CLEARANCE}px` }}
                             className="absolute left-0 right-0 border-t border-slate-100 border-dashed"
                         />
@@ -518,7 +517,6 @@ const DayView = ({ date, blocks, onDrop, onDeleteBlock, onEditBlock, onBackToCal
                       const cat = ACTIVITY_CATEGORIES.find(c => c.id === ghostPreview.category);
                       const Icon = cat.icon;
                       const isValid = ghostPreview.isValid;
-                      // FIXED TOP CALCULATION: Added clearance
                       const topStyle = (ghostPreview.startTime / 60) * COMPACT_PIXELS_PER_HOUR + VERTICAL_CLEARANCE;
                       
                       return (
@@ -1232,6 +1230,312 @@ const AccommodationScreen = ({ onBack, onNext, preferences, setPreferences }) =>
   );
 };
 
+const TransportationScreen = ({ onBack, onNext, preferences, setPreferences }) => {
+  const transportModes = [
+    { id: 'rideshare', name: 'Rideshare', icon: Car, desc: 'Uber, Lyft' },
+    { id: 'taxi', name: 'Taxi', icon: Car, desc: 'Traditional cabs' },
+    { id: 'public', name: 'Public Transit', icon: Car, desc: 'Bus, Metro, Train' },
+    { id: 'rental', name: 'Rental Car', icon: Car, desc: 'Self-drive' },
+    { id: 'bike', name: 'Bike/Scooter', icon: Car, desc: 'Pedal or electric' },
+    { id: 'walk', name: 'Walking', icon: Car, desc: 'On foot' },
+  ];
+
+  const toggleMode = (mode) => {
+    setPreferences(prev => ({
+      ...prev,
+      modes: prev.modes.includes(mode)
+        ? prev.modes.filter(m => m !== mode)
+        : [...prev.modes, mode]
+    }));
+  };
+
+  return (
+    <div className="max-w-7xl mx-auto">
+      <div className="bg-white/80 backdrop-blur-lg rounded-2xl shadow-2xl p-6 border border-white/20">
+        <button
+          onClick={onBack}
+          className="text-xs text-blue-600 hover:text-blue-700 font-semibold mb-3 flex items-center gap-1 hover:gap-2 transition-all"
+        >
+          <ChevronLeft size={14} />
+          Back to Accommodation
+        </button>
+
+        <div className="mb-6">
+          <h2 className="text-2xl font-bold bg-gradient-to-r from-green-600 to-teal-600 bg-clip-text text-transparent mb-2">
+            Transportation Preferences
+          </h2>
+          <p className="text-gray-600 text-sm">Choose how you'd like to get around during your trip</p>
+        </div>
+
+        <div className="space-y-6">
+          {/* Transport Modes - Card Grid */}
+          <div>
+            <label className="block text-base font-bold text-gray-800 mb-4 flex items-center gap-2">
+              <Car size={18} className="text-green-500" />
+              Preferred Transportation Modes
+            </label>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              {transportModes.map(mode => {
+                const Icon = mode.icon;
+                return (
+                  <button
+                    key={mode.id}
+                    onClick={() => toggleMode(mode.id)}
+                    className={`p-5 rounded-2xl font-medium text-sm transition-all hover:scale-105 hover:shadow-2xl active:scale-95 relative overflow-hidden group ${
+                      preferences.modes.includes(mode.id)
+                        ? 'bg-gradient-to-br from-green-500 via-teal-500 to-cyan-500 text-white shadow-xl'
+                        : 'bg-gradient-to-br from-gray-50 to-gray-100 text-gray-700 hover:from-gray-100 hover:to-gray-200 shadow-md border-2 border-gray-200'
+                    }`}
+                  >
+                    <div className="flex flex-col items-center gap-3 relative z-10">
+                      <div className={`p-3 rounded-full ${preferences.modes.includes(mode.id) ? 'bg-white/20' : 'bg-gray-200'}`}>
+                        <Icon size={28} />
+                      </div>
+                      <div className="text-center">
+                        <div className="font-bold">{mode.name}</div>
+                        <div className={`text-xs mt-1 ${preferences.modes.includes(mode.id) ? 'text-white/80' : 'text-gray-500'}`}>
+                          {mode.desc}
+                        </div>
+                      </div>
+                    </div>
+                    {preferences.modes.includes(mode.id) && (
+                      <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Priority Selection */}
+          <div className="bg-gradient-to-br from-blue-50 to-cyan-50 p-6 rounded-2xl border border-blue-100">
+            <label className="block text-base font-bold text-gray-800 mb-4">What's Most Important?</label>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              {['Speed', 'Cost', 'Comfort'].map(priority => (
+                <button
+                  key={priority}
+                  onClick={() => setPreferences({ ...preferences, priority: priority.toLowerCase() })}
+                  className={`py-4 px-6 rounded-xl font-bold text-lg transition-all hover:scale-105 hover:shadow-xl ${
+                    preferences.priority === priority.toLowerCase()
+                      ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg'
+                      : 'bg-white text-gray-700 hover:bg-gray-50 shadow-md'
+                  }`}
+                >
+                  {priority}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Budget Slider */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div className="bg-gradient-to-br from-emerald-50 to-green-50 p-6 rounded-2xl border border-emerald-100">
+              <label className="block text-base font-bold text-gray-800 mb-4">
+                Daily Transport Budget (USD)
+              </label>
+              <input
+                type="range"
+                min="10"
+                max="200"
+                step="10"
+                value={preferences.budget}
+                onChange={(e) => setPreferences({ ...preferences, budget: parseInt(e.target.value) })}
+                className="w-full h-3 bg-gradient-to-r from-emerald-400 to-green-500 rounded-lg appearance-none cursor-pointer"
+              />
+              <div className="flex justify-between mt-3">
+                <span className="text-sm text-gray-600">$10</span>
+                <span className="text-2xl font-black text-gray-800">${preferences.budget}</span>
+                <span className="text-sm text-gray-600">$200</span>
+              </div>
+            </div>
+
+            <div className="bg-gradient-to-br from-purple-50 to-pink-50 p-6 rounded-2xl border border-purple-100">
+              <label className="block text-base font-bold text-gray-800 mb-4">
+                Accessibility Needs
+              </label>
+              <div className="flex flex-col gap-2">
+                {['Wheelchair Access', 'Elevator Required', 'None'].map(need => (
+                  <button
+                    key={need}
+                    onClick={() => setPreferences({ ...preferences, accessibility: need.toLowerCase() })}
+                    className={`py-3 px-4 rounded-lg font-medium text-sm transition-all hover:scale-105 hover:shadow-lg text-left ${
+                      preferences.accessibility === need.toLowerCase()
+                        ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-md'
+                        : 'bg-white text-gray-700 hover:bg-gray-50 shadow-sm'
+                    }`}
+                  >
+                    {need}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex gap-4 mt-8">
+          <button
+            onClick={onBack}
+            className="flex-1 px-6 py-3 border-2 border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 transition-all font-semibold"
+          >
+            Back
+          </button>
+          <button
+            onClick={onNext}
+            className="flex-1 px-6 py-3 bg-gradient-to-r from-green-500 to-teal-500 text-white rounded-xl hover:shadow-xl transition-all font-semibold flex items-center justify-center gap-2"
+          >
+            Continue to Review
+            <ChevronRight size={18} />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const ReviewScreen = ({ onBack, activities, foodPrefs, accommPrefs, transportPrefs }) => {
+  const totalDays = Object.keys(activities).length;
+  const totalActivities = Object.values(activities).reduce((sum, day) => sum + day.length, 0);
+
+  return (
+    <div className="max-w-7xl mx-auto">
+      <div className="bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 rounded-3xl shadow-2xl p-8 text-white">
+        <button
+          onClick={onBack}
+          className="text-xs text-white/90 hover:text-white font-semibold mb-4 flex items-center gap-1 hover:gap-2 transition-all bg-white/10 px-3 py-2 rounded-lg backdrop-blur-sm"
+        >
+          <ChevronLeft size={14} />
+          Back to Transportation
+        </button>
+
+        <div className="mb-8 text-center">
+          <h2 className="text-4xl font-black mb-3 drop-shadow-lg">
+            Your Trip Summary
+          </h2>
+          <p className="text-white/90 text-lg">Review your amazing itinerary before finalizing</p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          {/* Stats Cards */}
+          <div className="bg-white/20 backdrop-blur-md rounded-2xl p-6 border border-white/30 hover:scale-105 transition-all">
+            <div className="text-5xl font-black mb-2">{totalDays}</div>
+            <div className="text-sm uppercase tracking-wider font-bold">Days Planned</div>
+          </div>
+          <div className="bg-white/20 backdrop-blur-md rounded-2xl p-6 border border-white/30 hover:scale-105 transition-all">
+            <div className="text-5xl font-black mb-2">{totalActivities}</div>
+            <div className="text-sm uppercase tracking-wider font-bold">Activities</div>
+          </div>
+          <div className="bg-white/20 backdrop-blur-md rounded-2xl p-6 border border-white/30 hover:scale-105 transition-all">
+            <div className="text-5xl font-black mb-2">{foodPrefs.cuisines.length}</div>
+            <div className="text-sm uppercase tracking-wider font-bold">Cuisines</div>
+          </div>
+          <div className="bg-white/20 backdrop-blur-md rounded-2xl p-6 border border-white/30 hover:scale-105 transition-all">
+            <div className="text-5xl font-black mb-2">{transportPrefs.modes.length}</div>
+            <div className="text-sm uppercase tracking-wider font-bold">Transport Modes</div>
+          </div>
+        </div>
+
+        {/* Detailed Breakdown */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Food Summary */}
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+            <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+              <Utensils size={20} />
+              Food Preferences
+            </h3>
+            <div className="space-y-3 text-sm">
+              <div>
+                <div className="font-semibold text-white/70 mb-1">Cuisines</div>
+                <div className="flex flex-wrap gap-1">
+                  {foodPrefs.cuisines.slice(0, 5).map(c => (
+                    <span key={c} className="bg-white/20 px-2 py-1 rounded-full text-xs">{c}</span>
+                  ))}
+                  {foodPrefs.cuisines.length > 5 && (
+                    <span className="bg-white/20 px-2 py-1 rounded-full text-xs">+{foodPrefs.cuisines.length - 5} more</span>
+                  )}
+                </div>
+              </div>
+              <div>
+                <div className="font-semibold text-white/70 mb-1">Price Range</div>
+                <div className="text-2xl">{'$'.repeat(foodPrefs.priceRange[1])}</div>
+              </div>
+              <div>
+                <div className="font-semibold text-white/70 mb-1">Meals Per Day</div>
+                <div className="text-2xl font-bold">{foodPrefs.mealsPerDay}</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Accommodation Summary */}
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+            <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+              <Hotel size={20} />
+              Accommodation
+            </h3>
+            <div className="space-y-3 text-sm">
+              <div>
+                <div className="font-semibold text-white/70 mb-1">Types</div>
+                <div className="flex flex-wrap gap-1">
+                  {accommPrefs.types.map(t => (
+                    <span key={t} className="bg-white/20 px-2 py-1 rounded-full text-xs capitalize">{t}</span>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <div className="font-semibold text-white/70 mb-1">Star Rating</div>
+                <div className="text-xl">{accommPrefs.minStars}★ - {accommPrefs.maxStars}★</div>
+              </div>
+              <div>
+                <div className="font-semibold text-white/70 mb-1">Budget Per Night</div>
+                <div className="text-xl font-bold">${accommPrefs.minPrice} - ${accommPrefs.maxPrice}</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Transportation Summary */}
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+            <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+              <Car size={20} />
+              Transportation
+            </h3>
+            <div className="space-y-3 text-sm">
+              <div>
+                <div className="font-semibold text-white/70 mb-1">Modes</div>
+                <div className="flex flex-wrap gap-1">
+                  {transportPrefs.modes.map(m => (
+                    <span key={m} className="bg-white/20 px-2 py-1 rounded-full text-xs capitalize">{m}</span>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <div className="font-semibold text-white/70 mb-1">Priority</div>
+                <div className="text-xl capitalize font-bold">{transportPrefs.priority}</div>
+              </div>
+              <div>
+                <div className="font-semibold text-white/70 mb-1">Daily Budget</div>
+                <div className="text-xl font-bold">${transportPrefs.budget}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-8 flex gap-4">
+          <button
+            onClick={onBack}
+            className="flex-1 px-8 py-4 bg-white/20 backdrop-blur-md border-2 border-white/30 text-white rounded-xl hover:bg-white/30 transition-all font-bold"
+          >
+            Back
+          </button>
+          <button
+            className="flex-1 px-8 py-4 bg-gradient-to-r from-yellow-400 to-orange-500 text-white rounded-xl hover:shadow-2xl hover:scale-105 transition-all font-black text-lg flex items-center justify-center gap-2"
+          >
+            Generate My Itinerary ✨
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export default function Tratlus() {
   const [activities, setActivities] = useState({});
   const [editingActivity, setEditingActivity] = useState(null);
@@ -1257,6 +1561,12 @@ export default function Tratlus() {
     amenities: [],
     maxTravelTime: 20,
     rooms: 1
+  });
+  const [transportationPreferences, setTransportationPreferences] = useState({
+    modes: [],
+    priority: 'cost',
+    budget: 50,
+    accessibility: 'none'
   });
 
   const handleDragStart = (e, category) => {
@@ -1322,18 +1632,23 @@ export default function Tratlus() {
   };
 
   const goToStep = (step) => {
-    // Can navigate to completed steps or the next step after the last completed
-    const maxAllowedStep = Math.min(Math.max(...completedSteps) + 1, 5);
-    if (step <= maxAllowedStep) {
+    // Can navigate to any previously visited step or step 1
+    const maxAllowedStep = Math.max(...completedSteps, 1);
+    if (step <= maxAllowedStep + 1 || step === 1) {
       setCurrentStep(step);
+      // Mark this step as completed/visited when entering it
+      if (!completedSteps.includes(step)) {
+        setCompletedSteps([...completedSteps, step]);
+      }
     }
   };
 
   const advanceStep = (nextStep) => {
-    setCurrentStep(nextStep);
-    if (!completedSteps.includes(currentStep)) {
-      setCompletedSteps([...completedSteps, currentStep]);
+    // Mark next step as visited when advancing
+    if (!completedSteps.includes(nextStep)) {
+      setCompletedSteps([...completedSteps, nextStep]);
     }
+    setCurrentStep(nextStep);
   };
 
   return (
@@ -1355,20 +1670,22 @@ export default function Tratlus() {
                 const stepNum = i + 1;
                 const isCompleted = completedSteps.includes(stepNum);
                 const isCurrent = currentStep === stepNum;
-                const isClickable = stepNum <= Math.max(...completedSteps) + 1;
+                // UPDATED: Logic to disable clicking future/grey steps
+                const isClickable = completedSteps.includes(stepNum);
                 
                 return (
                   <div key={step} className="flex items-center">
                     <button
+                      // UPDATED: Added disabled attribute and check
+                      disabled={!isClickable && !isCurrent}
                       onClick={() => isClickable && goToStep(stepNum)}
-                      disabled={!isClickable}
                       className={`px-3 py-1 rounded-full transition-all ${
                         isCurrent 
                           ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white scale-105 shadow-md' 
                           : isCompleted
-                          ? 'bg-gradient-to-r from-green-400 to-emerald-500 text-white hover:shadow-md hover:scale-105'
-                          : 'bg-gray-200 text-gray-400'
-                      } ${isClickable ? 'cursor-pointer' : 'cursor-not-allowed opacity-50'}`}
+                          ? 'bg-gradient-to-r from-green-400 to-emerald-500 text-white hover:shadow-lg hover:scale-110 cursor-pointer'
+                          : 'bg-gray-200 text-gray-400 cursor-not-allowed opacity-50'
+                      }`}
                     >
                       {step}
                     </button>
@@ -1469,6 +1786,25 @@ export default function Tratlus() {
             onNext={() => advanceStep(4)}
             preferences={accommodationPreferences}
             setPreferences={setAccommodationPreferences}
+          />
+        )}
+
+        {currentStep === 4 && (
+          <TransportationScreen
+            onBack={() => goToStep(3)}
+            onNext={() => advanceStep(5)}
+            preferences={transportationPreferences}
+            setPreferences={setTransportationPreferences}
+          />
+        )}
+
+        {currentStep === 5 && (
+          <ReviewScreen
+            onBack={() => goToStep(4)}
+            activities={activities}
+            foodPrefs={foodPreferences}
+            accommPrefs={accommodationPreferences}
+            transportPrefs={transportationPreferences}
           />
         )}
       </div>
