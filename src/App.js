@@ -271,10 +271,12 @@ const LandingPage = ({ onStart }) => {
                 <Compass className={`${isDarkMode ? 'text-blue-500' : 'text-blue-600'} w-8 h-8`} />
             </div>
 
-            {/* LOGO PLACEMENT - NEW & AESTHETIC */}
+            {/* LOGO PLACEMENT - UPDATED GLOW FOR LIGHT MODE */}
             <div className="mb-8 relative animate-in fade-in zoom-in duration-700">
-                {/* Subtle glow behind logo matching theme */}
-                <div className={`absolute inset-0 blur-xl opacity-30 rounded-full ${isDarkMode ? 'bg-fuchsia-500' : 'bg-blue-500'}`} />
+                {/* UPDATED: 'bg-purple-600 opacity-40' for Light Mode.
+                   This creates a deep, visible glow against the blue background.
+                */}
+                <div className={`absolute inset-0 blur-xl rounded-full ${isDarkMode ? 'bg-fuchsia-500 opacity-30' : 'bg-purple-600 opacity-40'}`} />
                 <img 
                   src={logo} 
                   alt="Tratlus Logo" 
@@ -282,13 +284,13 @@ const LandingPage = ({ onStart }) => {
                 />
             </div>
 
-            {/* Badge */}
+            {/* Badge - UPDATED TEXT */}
             <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full border backdrop-blur-md mb-8 transition-colors cursor-default animate-in fade-in slide-in-from-bottom-4 duration-700 ${isDarkMode ? 'bg-white/5 border-white/10 hover:bg-white/10' : 'bg-white/20 border-white/30 hover:bg-white/30 shadow-sm'}`}>
                 <span className="relative flex h-2 w-2">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
                 </span>
-                <span className={`text-xs font-bold tracking-widest uppercase ${isDarkMode ? 'text-slate-300' : 'text-blue-50'}`}>The Future of Travel Planning</span>
+                <span className={`text-xs font-bold tracking-widest uppercase ${isDarkMode ? 'text-slate-300' : 'text-blue-50'}`}>The Travel Atlas</span>
             </div>
 
             {/* Main Title - Vivid Fuchsia for Dark Mode */}
