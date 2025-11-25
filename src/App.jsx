@@ -1,7 +1,26 @@
 import React, { useState, useEffect, useRef, createContext, useContext, useCallback } from 'react';
-import { MapPin, Coffee, Hotel, Car, Plus, ChevronRight, ChevronLeft, X, Utensils, ShoppingBag, Camera, Star, Train, Bike, CheckCircle2, Plane, Globe, Compass, Map, Sun, Moon, Volume2, VolumeX, Volume1 } from 'lucide-react';
+import { MapPin, Coffee, Hotel, Car, Plus, ChevronRight, ChevronLeft, X, Utensils, ShoppingBag, Camera, Star, Train, Bike, CheckCircle2, Plane, Globe, Compass, Map, Sun, Moon, Volume2, VolumeX, Volume1, RotateCcw } from 'lucide-react';
 // IMPORTING USER LOGO
 import logo from '/logo.svg';
+
+// --- CONSTANTS FOR DEFAULTS ---
+const DEFAULT_FOOD_PREFS = { cuisines: [], dietary: [], allergies: '', priceRange: [1, 3], minRating: 3.5, maxDistance: 15, mealsPerDay: 3 };
+const DEFAULT_ACCOM_PREFS = { types: [], minStars: 3, maxStars: 5, minPrice: 50, maxPrice: 400, amenities: [], maxTravelTime: 20, rooms: 1 };
+const DEFAULT_TRANS_PREFS = { modes: [], priority: 'cost', budget: 50, accessibility: 'none' };
+
+// --- MOCK DATA FOR AUTOCOMPLETE ---
+const MOCK_LOCATIONS = [
+  "Paris, France", "London, United Kingdom", "New York City, USA", "Tokyo, Japan", "Rome, Italy", 
+  "Barcelona, Spain", "Dubai, UAE", "Singapore", "Bangkok, Thailand", "Istanbul, Turkey",
+  "Seoul, South Korea", "Amsterdam, Netherlands", "Berlin, Germany", "Sydney, Australia",
+  "Los Angeles, USA", "San Francisco, USA", "Kyoto, Japan", "Florence, Italy", "Prague, Czech Republic",
+  "Cape Town, South Africa", "Rio de Janeiro, Brazil", "Bali, Indonesia", "Santorini, Greece",
+  "Cairo, Egypt", "Mumbai, India", "Hong Kong", "Lisbon, Portugal", "Vienna, Austria",
+  "Toronto, Canada", "Vancouver, Canada", "Mexico City, Mexico", "Cancun, Mexico", "Marrakech, Morocco",
+  "Dublin, Ireland", "Edinburgh, Scotland", "Venice, Italy", "Madrid, Spain", "Milan, Italy",
+  "Chicago, USA", "Miami, USA", "Las Vegas, USA", "New Orleans, USA", "Honolulu, Hawaii",
+  "Phuket, Thailand", "Hanoi, Vietnam", "Buenos Aires, Argentina", "Lima, Peru", "Cusco, Peru"
+];
 
 // --- SOUND CONTEXT & WEB AUDIO ENGINE ---
 const SoundContext = createContext();
@@ -164,7 +183,6 @@ const SoundProvider = ({ children }) => {
                 max="1" 
                 step="0.01" 
                 value={volume}
-                // DYNAMIC FILL COLOR: RED IF MUTED, BLUE IF ACTIVE
                 style={{
                     background: `linear-gradient(to right, ${isMuted ? '#f87171' : '#60a5fa'} 0%, ${isMuted ? '#f87171' : '#60a5fa'} ${volume * 100}%, rgba(255, 255, 255, 0.2) ${volume * 100}%, rgba(255, 255, 255, 0.2) 100%)`
                 }}
@@ -329,21 +347,16 @@ const LandingPage = ({ onStart }) => {
         </div>
 
         <div className="relative z-10 max-w-7xl mx-auto px-6 h-screen flex flex-col justify-center items-center text-center">
-            {/* Floating Icons - UPDATED COLORS TO MATCH GRADIENT */}
+            {/* Floating Icons */}
             <div className={`absolute top-1/4 left-[15%] backdrop-blur-lg p-4 rounded-2xl border shadow-2xl animate-[bounce_6s_infinite] ${isDarkMode ? 'bg-white/5 border-white/10' : 'bg-white/10 border-white/20'}`}>
-                {/* Map matches the start of the gradient (Fuchsia) */}
                 <Map className={`${isDarkMode ? 'text-fuchsia-500' : 'text-fuchsia-600'} w-8 h-8`} />
             </div>
             <div className={`absolute bottom-1/3 right-[15%] backdrop-blur-lg p-4 rounded-2xl border shadow-2xl animate-[bounce_8s_infinite] delay-1000 ${isDarkMode ? 'bg-white/5 border-white/10' : 'bg-white/10 border-white/20'}`}>
-                {/* Compass matches the end of the gradient (Blue) */}
                 <Compass className={`${isDarkMode ? 'text-blue-500' : 'text-blue-600'} w-8 h-8`} />
             </div>
 
-            {/* LOGO PLACEMENT - UPDATED GLOW FOR LIGHT MODE */}
+            {/* LOGO PLACEMENT */}
             <div className="mb-8 relative animate-in fade-in zoom-in duration-700">
-                {/* UPDATED: 'bg-purple-600 opacity-40' for Light Mode.
-                   This creates a deep, visible glow against the blue background.
-                */}
                 <div className={`absolute inset-0 blur-xl rounded-full ${isDarkMode ? 'bg-fuchsia-500 opacity-30' : 'bg-purple-600 opacity-40'}`} />
                 <img 
                   src={logo} 
@@ -352,7 +365,7 @@ const LandingPage = ({ onStart }) => {
                 />
             </div>
 
-            {/* Badge - UPDATED TEXT */}
+            {/* Badge */}
             <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full border backdrop-blur-md mb-8 transition-colors cursor-default animate-in fade-in slide-in-from-bottom-4 duration-700 ${isDarkMode ? 'bg-white/5 border-white/10 hover:bg-white/10' : 'bg-white/20 border-white/30 hover:bg-white/30 shadow-sm'}`}>
                 <span className="relative flex h-2 w-2">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
@@ -361,7 +374,7 @@ const LandingPage = ({ onStart }) => {
                 <span className={`text-xs font-bold tracking-widest uppercase ${isDarkMode ? 'text-slate-300' : 'text-blue-50'}`}>The Travel Atlas</span>
             </div>
 
-            {/* Main Title - Vivid Fuchsia for Dark Mode */}
+            {/* Main Title */}
             <h1 className={`text-7xl md:text-9xl font-black tracking-tighter mb-6 bg-clip-text text-transparent drop-shadow-sm animate-in fade-in zoom-in-95 duration-1000 px-4 pb-4 ${isDarkMode ? 'bg-gradient-to-r from-fuchsia-500 to-blue-500' : 'bg-gradient-to-r from-fuchsia-600 to-blue-600'}`}>
                 TRATLUS
             </h1>
@@ -381,7 +394,6 @@ const LandingPage = ({ onStart }) => {
                 <span className="relative z-10 flex items-center gap-2">
                     START PLANNING <ChevronRight className="group-hover:translate-x-1 transition-transform" />
                 </span>
-                {/* Vivid Fuchsia for Dark Mode */}
                 <div 
                   className={`absolute inset-0 transition-transform duration-[800ms] ease-in-out origin-left ${isFlushing ? 'translate-x-0 opacity-100' : '-translate-x-full opacity-0 group-active:opacity-100'} ${isDarkMode ? 'bg-gradient-to-r from-fuchsia-500 to-blue-500' : 'bg-gradient-to-r from-fuchsia-600 to-blue-600'}`} 
                 />
@@ -416,7 +428,6 @@ const ActivityBlock = ({ category, onDragStart, onAutoAdd }) => {
         onDragStart(e, category);
       }}
       onClick={() => {
-        // UPDATED: Use 'pop' sound when clicked (same as drag)
         playSound('pop');
         onAutoAdd(category);
       }}
@@ -443,6 +454,11 @@ const CalendarView = ({ selectedDate, onDateSelect, activities }) => {
   const { playSound } = useContext(SoundContext);
   const [currentMonth, setCurrentMonth] = useState(new Date(selectedDate));
   
+  // HOVER GLOW - NORMALIZED SIZE (40px blur for both)
+  const containerHover = isDarkMode 
+    ? 'hover:shadow-[0_0_40px_-10px_rgba(59,130,246,0.3)]' // Dark Mode
+    : 'hover:shadow-[0_0_40px_-10px_rgba(29,78,216,0.9)]'; // Light Mode (Stronger)
+
   const getDaysInMonth = (date) => {
     const year = date.getFullYear();
     const month = date.getMonth();
@@ -472,7 +488,8 @@ const CalendarView = ({ selectedDate, onDateSelect, activities }) => {
   const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
   
   return (
-    <div className={`backdrop-blur-xl rounded-[2.5rem] shadow-2xl p-8 border relative overflow-hidden transition-all hover:shadow-[0_0_40px_-10px_rgba(59,130,246,0.3)] ${isDarkMode ? 'bg-slate-900/60 border-slate-700' : 'bg-white/40 border-white/40'}`}>
+    // UPDATED: Removed default shadow
+    <div className={`backdrop-blur-xl rounded-[2.5rem] p-8 border relative overflow-hidden transition-all ${containerHover} ${isDarkMode ? 'bg-slate-900/60 border-slate-700' : 'bg-white/40 border-white/40'}`}>
       <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400" />
       
       <div className="flex items-center justify-between mb-8 pt-4">
@@ -558,6 +575,11 @@ const DayView = ({ date, blocks, onDrop, onDeleteBlock, onEditBlock, onBackToCal
   const SNAP_MINUTES = 30;
   const MAX_MINUTES_IN_DAY = 1440;
   const VERTICAL_CLEARANCE = 10;
+
+  // HOVER GLOW
+  const containerHover = isDarkMode 
+    ? 'hover:shadow-[0_0_40px_-10px_rgba(59,130,246,0.3)]' 
+    : 'hover:shadow-[0_0_40px_-10px_rgba(29,78,216,0.9)]';
 
   const isInteracting = draggingBlock !== null || ghostPreview !== null;
 
@@ -684,8 +706,8 @@ const DayView = ({ date, blocks, onDrop, onDeleteBlock, onEditBlock, onBackToCal
   };
   
   return (
-    // UPDATED DAYVIEW SHADOW: significantly stronger light mode shadow (Deep Blue 90%)
-    <div className={`backdrop-blur-xl rounded-[2.5rem] p-6 border flex flex-col h-[800px] relative overflow-hidden transition-all ${isDarkMode ? 'bg-slate-900/60 border-slate-700 hover:shadow-[0_0_40px_-10px_rgba(59,130,246,0.3)]' : 'bg-white/40 border-white/40 shadow-sm hover:shadow-[0_30px_80px_-12px_rgba(29,78,216,0.9)]'}`}>
+    // UPDATED: Removed shadow-sm
+    <div className={`backdrop-blur-xl rounded-[2.5rem] p-6 border flex flex-col h-auto relative overflow-hidden transition-all ${containerHover} ${isDarkMode ? 'bg-slate-900/60 border-slate-700' : 'bg-white/40 border-white/40'}`}>
       {/* Gradient inside rounded container */}
       <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400" />
       
@@ -700,19 +722,11 @@ const DayView = ({ date, blocks, onDrop, onDeleteBlock, onEditBlock, onBackToCal
         </div>
       </div>
       
-      <style dangerouslySetInnerHTML={{__html: `
-        .dark-scrollbar::-webkit-scrollbar { width: 8px; }
-        .dark-scrollbar::-webkit-scrollbar-track { background: ${isDarkMode ? '#0f172a' : '#eff6ff'}; }
-        .dark-scrollbar::-webkit-scrollbar-thumb { background: ${isDarkMode ? 'rgba(255,255,255,0.2)' : '#ffffff'}; border-radius: 4px; }
-        .dark-scrollbar::-webkit-scrollbar-thumb:hover { background: ${isDarkMode ? 'rgba(255,255,255,0.4)' : '#f8fafc'}; }
-      `}} />
-
       {/* Main Timeline Container */}
-      <div className={`flex-1 overflow-y-auto relative dark-scrollbar rounded-3xl border shadow-inner ${isDarkMode ? 'border-slate-700 bg-slate-900' : 'border-blue-100 bg-blue-50'}`}>
-        <div className="flex min-h-full relative" style={{ height: `${(24 * COMPACT_PIXELS_PER_HOUR) + (2 * VERTICAL_CLEARANCE)}px` }}>
+      <div className={`flex-1 relative rounded-3xl border shadow-inner ${isDarkMode ? 'border-slate-700 bg-slate-900' : 'border-blue-100 bg-blue-50'}`}>
+        <div className="flex relative" style={{ height: `${(24 * COMPACT_PIXELS_PER_HOUR) + (2 * VERTICAL_CLEARANCE)}px` }}>
             
             <div className={`w-16 flex-shrink-0 relative border-r z-10 ${isDarkMode ? 'border-slate-700 bg-slate-900' : 'border-blue-200 bg-blue-100/60'}`}>
-                {/* UPDATED TIME LABEL COLOR FOR LIGHT MODE (text-slate-900 instead of blue) */}
                 {HOURS.map(hour => (<div key={hour} style={{ top: `${(hour * COMPACT_PIXELS_PER_HOUR) + VERTICAL_CLEARANCE}px` }} className="absolute right-0 w-full text-right pr-3"><span className={`text-[10px] font-bold block -translate-y-1/2 ${isDarkMode ? 'text-slate-200' : 'text-slate-900'}`}>{hour === 0 || hour === 24 ? '12 AM' : hour < 12 ? `${hour} AM` : hour === 12 ? '12 PM' : `${hour - 12} PM`}</span></div>))}
             </div>
 
@@ -746,8 +760,36 @@ const ActivityModal = ({ block, onSave, onClose }) => {
   const { isDarkMode } = useContext(ThemeContext);
   const { playSound } = useContext(SoundContext);
   const [formData, setFormData] = useState(block || { title: '', location: '', duration: 60, notes: '', category: 'attraction', startTime: 540 });
+  
+  // AUTOCOMPLETE STATES
+  const [suggestions, setSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+
   const roundToHalfHour = (num, min = 0) => Math.max(min, Math.ceil(num / 30) * 30);
   const handleBlur = (field) => { if (field === 'duration') setFormData(prev => ({ ...prev, duration: roundToHalfHour(prev.duration, 30) })); else if (field === 'startTime') setFormData(prev => ({ ...prev, startTime: roundToHalfHour(prev.startTime, 0) % 1440 })); };
+
+  // --- AUTOCOMPLETE LOGIC ---
+  const handleLocationChange = (e) => {
+    const value = e.target.value;
+    setFormData({ ...formData, location: value });
+    if (value.length > 0) {
+        const filtered = MOCK_LOCATIONS.filter(loc => loc.toLowerCase().includes(value.toLowerCase()));
+        setSuggestions(filtered);
+        setShowSuggestions(true);
+    } else {
+        setShowSuggestions(false);
+    }
+  };
+
+  const selectLocation = (loc) => {
+    playSound('click');
+    setFormData({ ...formData, location: loc });
+    setShowSuggestions(false);
+  };
+
+  const handleLocationBlur = () => {
+    setTimeout(() => setShowSuggestions(false), 200);
+  };
 
   // --- THEME VARIABLES FOR MODAL ---
   const modalBg = isDarkMode ? 'bg-slate-900' : 'bg-white';
@@ -761,6 +803,7 @@ const ActivityModal = ({ block, onSave, onClose }) => {
 
   return (
     <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center z-[100] p-4 animate-in fade-in duration-300">
+      {/* UPDATED: REVERTED TO overflow-hidden TO FIX GRADIENT */}
       <div className={`${modalBg} rounded-[2rem] shadow-2xl max-w-lg w-full p-8 border ${borderCol} scale-100 transition-all ring-1 ring-black/5 relative overflow-hidden`}>
         <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500" />
         <div className="flex items-center justify-between mb-8 pt-2">
@@ -781,7 +824,30 @@ const ActivityModal = ({ block, onSave, onClose }) => {
               <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2 ml-1">Location</label>
               <div className="relative">
                   <MapPin className="absolute left-4 top-4 text-slate-400" size={20} />
-                  <input type="text" value={formData.location} onChange={(e) => setFormData({ ...formData, location: e.target.value })} className={`w-full pl-12 pr-5 py-4 ${inputBg} border-0 ring-1 ${inputRing} rounded-2xl focus:ring-2 focus:ring-blue-500 transition-all font-bold ${inputText} shadow-sm`} placeholder="e.g., Paris, France" />
+                  <input 
+                    type="text" 
+                    value={formData.location} 
+                    onChange={handleLocationChange} 
+                    onBlur={handleLocationBlur}
+                    className={`w-full pl-12 pr-5 py-4 ${inputBg} border-0 ring-1 ${inputRing} rounded-2xl focus:ring-2 focus:ring-blue-500 transition-all font-bold ${inputText} shadow-sm`} 
+                    placeholder="e.g., Paris, France" 
+                  />
+                  
+                  {/* AUTOCOMPLETE DROPDOWN */}
+                  {showSuggestions && suggestions.length > 0 && (
+                      <div className={`absolute left-0 right-0 top-full mt-2 rounded-2xl border shadow-xl z-50 max-h-48 overflow-y-auto overflow-x-hidden backdrop-blur-xl ${isDarkMode ? 'bg-slate-800/90 border-slate-700' : 'bg-white/90 border-white/20'}`}>
+                          {suggestions.map((loc, idx) => (
+                              <button
+                                key={idx}
+                                onClick={() => selectLocation(loc)}
+                                className={`w-full text-left px-5 py-3 text-sm font-bold transition-colors flex items-center gap-2 ${isDarkMode ? 'text-slate-300 hover:bg-blue-600 hover:text-white border-b border-slate-700/50 last:border-0' : 'text-slate-600 hover:bg-blue-50 hover:text-blue-600 border-b border-slate-100 last:border-0'}`}
+                              >
+                                  <MapPin size={14} className="opacity-50" />
+                                  {loc}
+                              </button>
+                          ))}
+                      </div>
+                  )}
               </div>
           </div>
           <div className="grid grid-cols-2 gap-5">
@@ -808,7 +874,7 @@ const ActivityModal = ({ block, onSave, onClose }) => {
   );
 };
 
-const FoodPreferencesScreen = ({ onBack, onNext, preferences, setPreferences }) => {
+const FoodPreferencesScreen = ({ onReset, onNext, preferences, setPreferences }) => {
   const { isDarkMode } = useContext(ThemeContext);
   const { playSound } = useContext(SoundContext);
   const cuisineTypes = ['Italian', 'Chinese', 'Japanese', 'Mexican', 'Indian', 'Thai', 'French', 'Mediterranean', 'American', 'Korean', 'Vietnamese', 'Greek', 'African'];
@@ -817,13 +883,27 @@ const FoodPreferencesScreen = ({ onBack, onNext, preferences, setPreferences }) 
   const toggleCuisine = (c) => { playSound('click'); setPreferences(p => ({ ...p, cuisines: p.cuisines.includes(c) ? p.cuisines.filter(x => x !== c) : [...p.cuisines, c] })); };
   const toggleDietary = (d) => { playSound('click'); setPreferences(p => ({ ...p, dietary: p.dietary.includes(d) ? p.dietary.filter(x => x !== d) : [...p.dietary, d] })); };
 
+  // HOVER GLOW
+  const containerHover = isDarkMode 
+    ? 'hover:shadow-[0_0_40px_-10px_rgba(59,130,246,0.3)]' 
+    : 'hover:shadow-[0_0_40px_-10px_rgba(29,78,216,0.9)]';
+
   return (
-    <div className="max-w-6xl mx-auto">
-      <div className={`backdrop-blur-xl rounded-[2.5rem] shadow-2xl p-10 border relative overflow-hidden ${isDarkMode ? 'bg-slate-900/60 border-slate-700' : 'bg-white/40 border-white/40'}`}>
+    <div className="max-w-6xl mx-auto py-8">
+      {/* UPDATED: Removed default shadow-2xl */}
+      <div className={`backdrop-blur-xl rounded-[2.5rem] p-10 border relative overflow-hidden transition-all ${containerHover} ${isDarkMode ? 'bg-slate-900/60 border-slate-700' : 'bg-white/40 border-white/40'}`}>
         <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-orange-400 via-red-400 to-pink-400" />
         
-        <button onClick={() => { playSound('cancel'); onBack(); }} className={`text-sm font-bold mb-6 flex items-center gap-2 hover:-translate-x-1 transition-all w-fit px-4 py-2 rounded-full shadow-sm pt-4 ${isDarkMode ? 'text-slate-400 hover:text-orange-400 bg-slate-800/50' : 'text-slate-500 hover:text-orange-600 bg-white/50'}`}>
-          <ChevronLeft size={16} /> Back to Itinerary
+        {/* UPDATED: Removed border-2, hover black in Dark Mode */}
+        <button 
+            onClick={() => { playSound('cancel'); onReset(); }} 
+            className={`text-sm font-bold mb-6 flex items-center gap-2 hover:-translate-x-1 transition-all w-fit px-4 py-2 rounded-full shadow-sm pt-4 ${
+                isDarkMode 
+                ? 'text-slate-400 hover:text-orange-500 bg-slate-900 hover:bg-black' 
+                : 'text-slate-500 hover:text-orange-600 bg-white/50 hover:bg-white' 
+            }`}
+        >
+          <RotateCcw size={16} /> RESET
         </button>
 
         <div className="mb-10 text-left">
@@ -835,7 +915,6 @@ const FoodPreferencesScreen = ({ onBack, onNext, preferences, setPreferences }) 
           {/* Interactive Circles */}
           <div className={`lg:col-span-7 relative rounded-[2rem] p-8 border shadow-inner ${isDarkMode ? 'bg-slate-800/30 border-slate-700' : 'bg-white/30 border-white/40'}`}>
              <div className="flex flex-col lg:flex-row justify-around items-start gap-8 mt-4">
-                
                 {/* CUISINE WHEEL */}
                 <div className="text-center w-full">
                     <h3 className={`font-black mb-6 flex items-center justify-center gap-2 ${isDarkMode ? 'text-slate-200' : 'text-slate-700'}`}><Utensils size={20} className="text-orange-500"/> Favorite Cuisines</h3>
@@ -861,7 +940,6 @@ const FoodPreferencesScreen = ({ onBack, onNext, preferences, setPreferences }) 
                         })}
                     </div>
                 </div>
-                
                 {/* DIETARY WHEEL */}
                 <div className="text-center w-full">
                     <h3 className={`font-black mb-6 flex items-center justify-center gap-2 ${isDarkMode ? 'text-slate-200' : 'text-slate-700'}`}><Coffee size={20} className="text-green-500"/> Dietary Restrictions</h3>
@@ -892,50 +970,62 @@ const FoodPreferencesScreen = ({ onBack, onNext, preferences, setPreferences }) 
           {/* Right Column - Details */}
           <div className="lg:col-span-5 space-y-6">
 
-            <div className={`p-6 rounded-[2rem] shadow-sm border ${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white/50 border-white/60'}`}>
-                <label className="block text-xs font-extrabold uppercase tracking-wider text-slate-400 mb-3">Food Allergies</label>
-                <input 
-                  type="text" 
-                  value={preferences.allergies} 
-                  onChange={(e) => setPreferences({ ...preferences, allergies: e.target.value })} 
-                  // UPDATED: 'focus:outline-none' removes default browser border.
-                  // UPDATED: 'focus:ring-orange-200' adds the specific glow you requested.
-                  className={`w-full px-5 py-4 border-0 rounded-2xl focus:outline-none focus:ring-2 focus:ring-orange-200 transition-all font-bold shadow-sm bg-gradient-to-br from-orange-500 to-red-600 text-white placeholder-white/70`} 
-                  placeholder="e.g., Peanuts, Shellfish..." 
-                />
-            </div>
-
-            <div className={`p-6 rounded-[2rem] shadow-sm border ${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white/50 border-white/60'}`}>
-                <label className="block text-xs font-extrabold uppercase tracking-wider text-slate-400 mb-4">Price Range</label>
-                <div className="flex gap-3">
-                    {[1, 2, 3, 4].map(l => (
-                        <button key={l} onClick={() => { playSound('click'); setPreferences({ ...preferences, priceRange: [1, l] }); }} 
-                        className={`flex-1 h-12 rounded-xl font-black text-lg transition-all duration-200 flex items-center justify-center hover:scale-105 ${l <= preferences.priceRange[1] ? 'bg-gradient-to-br from-orange-500 to-red-500 text-white shadow-lg ring-2 ring-orange-200' : isDarkMode ? 'bg-slate-900 text-slate-500 hover:bg-slate-800' : 'bg-white text-slate-300 hover:bg-slate-50'}`}>
-                            {'$'.repeat(l)}
-                        </button>
-                    ))}
-                </div>
-            </div>
-
+            {/* 1. Max Distance */}
             <div className="bg-gradient-to-br from-orange-500 to-red-600 p-6 rounded-[2rem] shadow-lg text-white relative overflow-hidden group">
                 <div className="absolute -right-10 -top-10 w-40 h-40 bg-white/10 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700" />
                 <label className="block text-xs font-extrabold uppercase tracking-wider text-white/60 mb-2">Max Distance</label>
                 <div className="text-5xl font-black mb-4 tracking-tighter">{preferences.maxDistance} <span className="text-2xl font-bold text-orange-100">min</span></div>
                 <input type="range" min="5" max="60" step="5" value={preferences.maxDistance} onChange={(e) => setPreferences({ ...preferences, maxDistance: parseInt(e.target.value) })} className="w-full h-2 bg-white/20 rounded-full appearance-none cursor-pointer accent-white hover:accent-orange-100" />
             </div>
+
+            {/* 2. Price Range */}
+            <div className={`p-6 rounded-[2rem] shadow-sm border ${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white/50 border-white/60'}`}>
+                <label className="block text-xs font-extrabold uppercase tracking-wider text-slate-400 mb-4">Price Range</label>
+                <div className="flex gap-3">
+                    {[1, 2, 3, 4].map(l => {
+                        const isSelected = l <= preferences.priceRange[1];
+                        return (
+                            <button key={l} onClick={() => { playSound('click'); setPreferences({ ...preferences, priceRange: [1, l] }); }} 
+                            // UPDATED: Removed glow in Dark Mode. Using standard shadow-lg (selected) and hover:shadow-md (unselected)
+                            className={`flex-1 h-12 rounded-xl font-black text-lg transition-all duration-200 flex items-center justify-center 
+                                ${isSelected 
+                                    ? `bg-gradient-to-br from-orange-500 to-red-500 text-white ring-2 ring-orange-200 hover:scale-105 shadow-lg` 
+                                    : isDarkMode 
+                                        ? 'bg-slate-900 text-slate-500 hover:bg-slate-800 hover:shadow-md' 
+                                        : 'bg-white text-slate-300 hover:bg-slate-100 hover:shadow-md hover:text-slate-400' 
+                                }`}
+                            >
+                                {'$'.repeat(l)}
+                            </button>
+                        );
+                    })}
+                </div>
+            </div>
+
+            {/* 3. Food Allergies */}
+            <div className={`p-6 rounded-[2rem] shadow-sm border ${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white/50 border-white/60'}`}>
+                <label className="block text-xs font-extrabold uppercase tracking-wider text-slate-400 mb-3">Food Allergies</label>
+                <input 
+                  type="text" 
+                  value={preferences.allergies} 
+                  onChange={(e) => setPreferences({ ...preferences, allergies: e.target.value })} 
+                  className={`w-full px-5 py-4 border-0 ring-1 rounded-2xl focus:outline-none focus:ring-2 focus:ring-orange-200 transition-all font-bold shadow-sm ${isDarkMode ? 'bg-slate-900 ring-slate-700 text-slate-200 placeholder-slate-500' : 'bg-white ring-slate-200 text-slate-700 placeholder-slate-300'}`}
+                  placeholder="e.g., Peanuts, Shellfish..." 
+                />
+            </div>
+
           </div>
         </div>
 
-        <div className="flex gap-5">
-          <button onClick={() => { playSound('cancel'); onBack(); }} className={`px-8 py-4 border-2 rounded-2xl transition-all font-bold text-sm uppercase tracking-wide ${isDarkMode ? 'border-slate-700 text-slate-400 hover:bg-slate-800 hover:border-slate-600' : 'border-slate-200 text-slate-600 hover:bg-slate-50 hover:border-slate-300'}`}>Back</button>
-          <button onClick={() => { onNext(); }} className="flex-1 px-8 py-4 bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-2xl hover:shadow-xl hover:shadow-orange-500/30 hover:scale-[1.01] active:scale-95 transition-all font-bold text-sm uppercase tracking-wide flex items-center justify-center gap-2">Find Places to Stay <ChevronRight size={18} /></button>
+        <div className="flex gap-5 justify-end">
+          <button onClick={() => { onNext(); }} className="px-8 py-4 bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-2xl hover:shadow-xl hover:shadow-orange-500/30 hover:scale-[1.01] active:scale-95 transition-all font-bold text-sm uppercase tracking-wide flex items-center justify-center gap-2">Find Places to Stay <ChevronRight size={18} /></button>
         </div>
       </div>
     </div>
   );
 };
 
-const AccommodationScreen = ({ onBack, onNext, preferences, setPreferences }) => {
+const AccommodationScreen = ({ onReset, onNext, preferences, setPreferences }) => {
   const { isDarkMode } = useContext(ThemeContext);
   const { playSound } = useContext(SoundContext);
   const types = [
@@ -948,13 +1038,27 @@ const AccommodationScreen = ({ onBack, onNext, preferences, setPreferences }) =>
   const toggleType = (t) => { playSound('click'); setPreferences(p => ({ ...p, types: p.types.includes(t) ? p.types.filter(x => x !== t) : [...p.types, t] })); };
   const toggleAmenity = (a) => { playSound('click'); setPreferences(p => ({ ...p, amenities: p.amenities.includes(a) ? p.amenities.filter(x => x !== a) : [...p.amenities, a] })); };
 
+  // HOVER GLOW
+  const containerHover = isDarkMode 
+    ? 'hover:shadow-[0_0_40px_-10px_rgba(59,130,246,0.3)]' 
+    : 'hover:shadow-[0_0_40px_-10px_rgba(29,78,216,0.9)]';
+
   return (
-    <div className="max-w-6xl mx-auto">
-        <div className={`backdrop-blur-xl rounded-[2.5rem] shadow-2xl p-10 border relative overflow-hidden ${isDarkMode ? 'bg-slate-900/60 border-slate-700' : 'bg-white/40 border-white/40'}`}>
+    <div className="max-w-6xl mx-auto py-8">
+        {/* UPDATED: Removed default shadow-2xl */}
+        <div className={`backdrop-blur-xl rounded-[2.5rem] p-10 border relative overflow-hidden transition-all ${containerHover} ${isDarkMode ? 'bg-slate-900/60 border-slate-700' : 'bg-white/40 border-white/40'}`}>
             <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-purple-400 via-fuchsia-400 to-pink-400" />
             
-            <button onClick={() => { playSound('cancel'); onBack(); }} className={`text-sm font-bold mb-6 flex items-center gap-2 hover:-translate-x-1 transition-all w-fit px-4 py-2 rounded-full shadow-sm pt-4 ${isDarkMode ? 'text-slate-400 hover:text-purple-400 bg-slate-800/50' : 'text-slate-500 hover:text-purple-600 bg-white/50'}`}>
-                <ChevronLeft size={16} /> Back to Food
+            {/* UPDATED: Removed border-2, hover black in Dark Mode, hover text vivid purple (fuchsia-400) */}
+            <button 
+                onClick={() => { playSound('cancel'); onReset(); }} 
+                className={`text-sm font-bold mb-6 flex items-center gap-2 hover:-translate-x-1 transition-all w-fit px-4 py-2 rounded-full shadow-sm pt-4 ${
+                    isDarkMode 
+                    ? 'text-slate-400 hover:text-fuchsia-400 bg-slate-900 hover:bg-black' 
+                    : 'text-slate-500 hover:text-purple-600 bg-white/50 hover:bg-white' 
+                }`}
+            >
+                <RotateCcw size={16} /> RESET
             </button>
 
             <div className="mb-10 text-left">
@@ -968,8 +1072,10 @@ const AccommodationScreen = ({ onBack, onNext, preferences, setPreferences }) =>
                         const Icon = t.icon;
                         const isSel = preferences.types.includes(t.id);
                         return (
-                            <button key={t.id} onClick={() => toggleType(t.id)} className={`p-4 rounded-3xl transition-all duration-300 text-left relative overflow-hidden group flex flex-col items-center justify-center gap-2 h-32 ${isSel ? 'bg-gradient-to-br from-purple-600 to-pink-600 text-white shadow-xl scale-[1.02]' : isDarkMode ? 'bg-slate-800/60 hover:bg-slate-700 text-slate-400' : 'bg-white/60 hover:bg-white text-slate-600 hover:shadow-lg hover:-translate-y-1'}`}>
-                                <div className={`p-3 rounded-2xl ${isSel ? 'bg-white/20' : isDarkMode ? 'bg-slate-900 group-hover:bg-slate-800' : 'bg-purple-50 group-hover:bg-purple-100'} transition-colors`}><Icon size={28} /></div>
+                            // UPDATED: Reverted the icon text color change (removed group-hover:text-purple-700)
+                            // Kept the bg-purple-300 for visibility
+                            <button key={t.id} onClick={() => toggleType(t.id)} className={`p-4 rounded-3xl transition-all duration-300 text-left relative overflow-hidden group flex flex-col items-center justify-center gap-2 h-32 hover:-translate-y-1 ${isSel ? 'bg-gradient-to-br from-purple-600 to-pink-600 text-white shadow-xl scale-[1.02]' : isDarkMode ? 'bg-slate-800/60 hover:bg-slate-700 text-slate-400 hover:shadow-lg' : 'bg-white/70 hover:bg-white text-slate-600 hover:shadow-lg'}`}>
+                                <div className={`p-3 rounded-2xl ${isSel ? 'bg-white/20' : isDarkMode ? 'bg-slate-900 group-hover:bg-purple-600 group-hover:text-white' : 'bg-purple-50 group-hover:bg-purple-300'} transition-colors`}><Icon size={28} /></div>
                                 <span className="font-bold text-sm">{t.name}</span>
                             </button>
                         );
@@ -982,8 +1088,14 @@ const AccommodationScreen = ({ onBack, onNext, preferences, setPreferences }) =>
                          <div className="flex justify-between items-center gap-2">
                             {[1, 2, 3, 4, 5].map(s => (
                                 <button key={s} onClick={() => { playSound('click'); setPreferences({...preferences, minStars: s}); }} 
-                                // UPDATED: Added 'ring-2 ring-yellow-200' to the active state logic below
-                                className={`flex-1 aspect-square rounded-2xl flex items-center justify-center font-black text-lg transition-all border hover:scale-110 ${preferences.minStars <= s ? 'bg-yellow-400 text-white shadow-lg rotate-3 border-transparent ring-2 ring-yellow-200' : isDarkMode ? 'bg-slate-900 text-slate-600 hover:bg-slate-800 border-slate-800' : 'bg-white text-slate-300 hover:bg-slate-50 border-slate-100'}`}>
+                                // UPDATED: Removed glow in Dark Mode. Standard shadow-lg (selected) / hover:shadow-md (unselected).
+                                className={`flex-1 aspect-square rounded-2xl flex items-center justify-center font-black text-lg transition-all border hover:scale-110 
+                                ${preferences.minStars <= s 
+                                    ? `bg-yellow-400 text-white shadow-lg rotate-3 border-transparent ring-2 ring-yellow-200` 
+                                    : isDarkMode 
+                                        ? 'bg-slate-900 text-slate-600 hover:bg-slate-800 border-slate-800 hover:shadow-md' 
+                                        : 'bg-white text-slate-300 hover:bg-slate-100 hover:shadow-md hover:text-slate-400 border-slate-100 shadow-sm'
+                                }`}>
                                     {s}<span className="text-[10px] ml-0.5 align-top">★</span>
                                 </button>
                             ))}
@@ -1004,7 +1116,15 @@ const AccommodationScreen = ({ onBack, onNext, preferences, setPreferences }) =>
                         {amenities.map(a => {
                             const isSel = preferences.amenities.includes(a);
                             return (
-                                <button key={a} onClick={() => toggleAmenity(a)} className={`px-6 py-3 rounded-xl font-bold text-sm transition-all duration-200 ${isSel ? 'bg-slate-800 text-white shadow-lg scale-105' : isDarkMode ? 'bg-slate-900 text-slate-400 hover:bg-slate-800' : 'bg-white text-slate-500 hover:bg-slate-100 shadow-sm hover:shadow'}`}>
+                                <button key={a} onClick={() => toggleAmenity(a)} 
+                                // UPDATED: Removed glow in Dark Mode. Standard shadow-lg / hover:shadow-md.
+                                className={`px-6 py-3 rounded-xl font-bold text-sm transition-all duration-200 
+                                ${isSel 
+                                    ? `bg-slate-800 text-white shadow-lg scale-105` 
+                                    : isDarkMode 
+                                        ? 'bg-slate-900 text-slate-400 hover:bg-slate-800 hover:shadow-md' 
+                                        : 'bg-white text-slate-500 hover:bg-slate-100 hover:shadow-md hover:text-slate-800 shadow-sm'
+                                }`}>
                                     {a}
                                 </button>
                             );
@@ -1013,16 +1133,15 @@ const AccommodationScreen = ({ onBack, onNext, preferences, setPreferences }) =>
                 </div>
             </div>
 
-            <div className="flex gap-5">
-                <button onClick={() => { playSound('cancel'); onBack(); }} className={`px-8 py-4 border-2 rounded-2xl transition-all font-bold text-sm uppercase tracking-wide ${isDarkMode ? 'border-slate-700 text-slate-400 hover:bg-slate-800 hover:border-slate-600' : 'border-slate-200 text-slate-600 hover:bg-slate-50 hover:border-slate-300'}`}>Back</button>
-                <button onClick={() => { onNext(); }} className="flex-1 px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-2xl hover:shadow-xl hover:shadow-purple-500/30 hover:scale-[1.01] active:scale-95 transition-all font-bold text-sm uppercase tracking-wide flex items-center justify-center gap-2">Transport Options <ChevronRight size={18} /></button>
+            <div className="flex gap-5 justify-end">
+                <button onClick={() => { onNext(); }} className="px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-2xl hover:shadow-xl hover:shadow-purple-500/30 hover:scale-[1.01] active:scale-95 transition-all font-bold text-sm uppercase tracking-wide flex items-center justify-center gap-2">Transport Options <ChevronRight size={18} /></button>
             </div>
         </div>
     </div>
   );
 };
 
-const TransportationScreen = ({ onBack, onNext, preferences, setPreferences }) => {
+const TransportationScreen = ({ onReset, onNext, preferences, setPreferences }) => {
   const { isDarkMode } = useContext(ThemeContext);
   const { playSound } = useContext(SoundContext);
   const modes = [
@@ -1036,16 +1155,29 @@ const TransportationScreen = ({ onBack, onNext, preferences, setPreferences }) =
   function KeyIcon(props) { return <div {...props} className="border-2 border-current rounded w-5 h-3" /> }
   const toggleMode = (m) => { playSound('click'); setPreferences(p => ({ ...p, modes: p.modes.includes(m) ? p.modes.filter(x => x !== m) : [...p.modes, m] })); };
 
+  // HOVER GLOW
+  const containerHover = isDarkMode 
+    ? 'hover:shadow-[0_0_40px_-10px_rgba(59,130,246,0.3)]' 
+    : 'hover:shadow-[0_0_40px_-10px_rgba(29,78,216,0.9)]';
+
   return (
-    <div className="max-w-6xl mx-auto">
-        <div className={`backdrop-blur-xl rounded-[2.5rem] shadow-2xl p-10 border relative overflow-hidden ${isDarkMode ? 'bg-slate-900/60 border-slate-700' : 'bg-white/40 border-white/40'}`}>
+    <div className="max-w-6xl mx-auto py-8">
+        {/* UPDATED: Removed default shadow-2xl */}
+        <div className={`backdrop-blur-xl rounded-[2.5rem] p-10 border relative overflow-hidden transition-all ${containerHover} ${isDarkMode ? 'bg-slate-900/60 border-slate-700' : 'bg-white/40 border-white/40'}`}>
              <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-green-400 via-teal-400 to-cyan-400" />
              
-             <button onClick={() => { playSound('cancel'); onBack(); }} className={`text-sm font-bold mb-6 flex items-center gap-2 hover:-translate-x-1 transition-all w-fit px-4 py-2 rounded-full shadow-sm pt-4 ${isDarkMode ? 'text-slate-400 hover:text-teal-400 bg-slate-800/50' : 'text-slate-500 hover:text-teal-600 bg-white/50'}`}>
-                <ChevronLeft size={16} /> Back to Accommodation
+             {/* UPDATED: Removed border-2, hover black in Dark Mode */}
+             <button 
+                onClick={() => { playSound('cancel'); onReset(); }} 
+                className={`text-sm font-bold mb-6 flex items-center gap-2 hover:-translate-x-1 transition-all w-fit px-4 py-2 rounded-full shadow-sm pt-4 ${
+                    isDarkMode 
+                    ? 'text-slate-400 hover:text-teal-400 bg-slate-900 hover:bg-black' 
+                    : 'text-slate-500 hover:text-teal-600 bg-white/50 hover:bg-white' 
+                }`}
+             >
+                <RotateCcw size={16} /> RESET
             </button>
 
-            {/* ADDED w-fit */}
             <div className="mb-10 text-left">
                 <h2 className="text-4xl font-black bg-gradient-to-r from-teal-500 to-emerald-600 bg-clip-text text-transparent mb-3 pt-2 pb-3 leading-normal w-fit">Getting Around</h2>
                 <p className={`font-medium text-lg ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>Select your preferred wheels (or wings)</p>
@@ -1057,9 +1189,10 @@ const TransportationScreen = ({ onBack, onNext, preferences, setPreferences }) =
                         const Icon = m.icon;
                         const isSel = preferences.modes.includes(m.id);
                         return (
-                            <button key={m.id} onClick={() => toggleMode(m.id)} className={`p-6 rounded-3xl transition-all duration-300 text-left relative overflow-hidden group ${isSel ? 'bg-gradient-to-br from-teal-500 to-emerald-600 text-white shadow-xl scale-[1.02]' : isDarkMode ? 'bg-slate-800/70 hover:bg-slate-700 text-slate-400 hover:shadow-lg' : 'bg-white/70 hover:bg-white text-slate-600 hover:shadow-lg'}`}>
+                            // UPDATED: Added hover:shadow-lg to Dark Mode. Updated Icon BG logic for Dark Mode to use bg-teal-600 and text-white.
+                            <button key={m.id} onClick={() => toggleMode(m.id)} className={`p-6 rounded-3xl transition-all duration-300 text-left relative overflow-hidden group hover:-translate-y-1 ${isSel ? 'bg-gradient-to-br from-teal-500 to-emerald-600 text-white shadow-xl scale-[1.02]' : isDarkMode ? 'bg-slate-800/70 hover:bg-slate-700 text-slate-400 hover:shadow-lg' : 'bg-white/70 hover:bg-white text-slate-600 hover:shadow-lg'}`}>
                                 <div className="flex justify-between items-start mb-4">
-                                    <div className={`p-3 rounded-2xl ${isSel ? 'bg-white/20' : isDarkMode ? 'bg-slate-900 group-hover:bg-slate-800' : 'bg-teal-50 group-hover:bg-teal-100'} transition-colors`}><Icon size={24} /></div>
+                                    <div className={`p-3 rounded-2xl transition-colors ${isSel ? 'bg-white/20' : isDarkMode ? 'bg-slate-900 group-hover:bg-teal-600 group-hover:text-white' : 'bg-teal-50 group-hover:bg-teal-100'}`}><Icon size={24} /></div>
                                     {isSel && <div className="bg-white/20 p-1 rounded-full"><CheckCircle2 size={16} /></div>}
                                 </div>
                                 <div className="font-bold text-lg">{m.name}</div>
@@ -1075,7 +1208,15 @@ const TransportationScreen = ({ onBack, onNext, preferences, setPreferences }) =
                             {['Speed', 'Cost', 'Comfort'].map(p => {
                                 const isSel = preferences.priority === p.toLowerCase();
                                 return (
-                                    <button key={p} onClick={() => { playSound('click'); setPreferences({...preferences, priority: p.toLowerCase()}); }} className={`w-full py-4 rounded-xl font-bold transition-all flex items-center justify-between px-6 ${isSel ? 'bg-slate-800 text-white shadow-lg scale-105' : isDarkMode ? 'bg-slate-900 text-slate-400 hover:bg-slate-800' : 'bg-white text-slate-500 hover:bg-slate-50'}`}>
+                                    <button key={p} onClick={() => { playSound('click'); setPreferences({...preferences, priority: p.toLowerCase()}); }} 
+                                    // UPDATED: Removed glow in Dark Mode. Standard shadow-lg / hover:shadow-md.
+                                    className={`w-full py-4 rounded-xl font-bold transition-all flex items-center justify-between px-6 
+                                    ${isSel 
+                                        ? `bg-slate-800 text-white shadow-lg scale-105` 
+                                        : isDarkMode 
+                                            ? 'bg-slate-900 text-slate-400 hover:bg-slate-800 hover:shadow-md' 
+                                            : 'bg-white text-slate-500 hover:bg-slate-100 hover:shadow-md hover:text-slate-800 shadow-sm'
+                                    }`}>
                                         {p}
                                         {isSel && <div className="w-2 h-2 rounded-full bg-teal-400 shadow-[0_0_10px_rgba(45,212,191,0.8)]" />}
                                     </button>
@@ -1092,9 +1233,8 @@ const TransportationScreen = ({ onBack, onNext, preferences, setPreferences }) =
                 </div>
             </div>
 
-            <div className="flex gap-5">
-                <button onClick={() => { playSound('cancel'); onBack(); }} className={`px-8 py-4 border-2 rounded-2xl transition-all font-bold text-sm uppercase tracking-wide ${isDarkMode ? 'border-slate-700 text-slate-400 hover:bg-slate-800 hover:border-slate-600' : 'border-slate-200 text-slate-600 hover:bg-slate-50 hover:border-slate-300'}`}>Back</button>
-                <button onClick={() => { onNext(); }} className="flex-1 px-8 py-4 bg-gradient-to-r from-teal-500 to-emerald-600 text-white rounded-2xl hover:shadow-xl hover:shadow-teal-500/30 hover:scale-[1.01] active:scale-95 transition-all font-bold text-sm uppercase tracking-wide flex items-center justify-center gap-2">Review Trip <ChevronRight size={18} /></button>
+            <div className="flex gap-5 justify-end">
+                <button onClick={() => { onNext(); }} className="px-8 py-4 bg-gradient-to-r from-teal-500 to-emerald-600 text-white rounded-2xl hover:shadow-xl hover:shadow-teal-500/30 hover:scale-[1.01] active:scale-95 transition-all font-bold text-sm uppercase tracking-wide flex items-center justify-center gap-2">Review Trip <ChevronRight size={18} /></button>
             </div>
         </div>
     </div>
@@ -1110,34 +1250,36 @@ const ReviewScreen = ({ onBack, activities, foodPrefs, accommPrefs, transportPre
 
   // --- GRADIENT DEFINITIONS ---
 
-  // 1. Text/Icon Gradient (Kept at original contrast levels for readability)
+  // 1. Text/Icon Gradient
   const textGradient = isDarkMode 
     ? 'bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400' 
     : 'bg-gradient-to-r from-pink-600 via-purple-600 to-blue-600';
 
-  // 2. Button Base Gradient (The "Tad Smidge" Adjustment)
-  // Dark Mode: Moved from 400 -> 500 (Slightly darker/richer)
-  // Light Mode: Moved from 600 -> 500 (Slightly lighter/brighter)
+  // 2. Button Base Gradient
   const buttonBaseGradient = isDarkMode
     ? 'bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500' 
     : 'bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500';
 
-  // 3. Hover Overlay Gradient (Strict Inverse - High Contrast)
-  // Dark Mode Hover: Floods with Deep Pink/Blue (600s)
-  // Light Mode Hover: Floods with Bright Blue/Pink (400s)
+  // 3. Hover Overlay Gradient
   const hoverOverlayGradient = isDarkMode
     ? 'bg-gradient-to-r from-pink-600 via-purple-600 to-blue-600'
     : 'bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400';
 
+  // HOVER GLOW
+  const containerHover = isDarkMode 
+    ? 'hover:shadow-[0_0_40px_-10px_rgba(59,130,246,0.3)]' 
+    : 'hover:shadow-[0_0_40px_-10px_rgba(29,78,216,0.9)]';
+
   return (
-    <div className="max-w-5xl mx-auto">
-      <div className={`rounded-[3rem] shadow-2xl overflow-hidden relative min-h-[600px] transition-all duration-500 ${isDarkMode ? 'bg-slate-900 text-white' : 'bg-gradient-to-br from-blue-100 via-blue-400 to-blue-700 text-white shadow-[0_20px_60px_-15px_rgba(30,58,138,0.5)] border border-blue-300'}`}>
+    <div className="max-w-5xl mx-auto py-8">
+      {/* UPDATED: Removed default shadow-2xl */}
+      <div className={`rounded-[3rem] overflow-hidden relative min-h-[600px] transition-all duration-500 ${containerHover} ${isDarkMode ? 'bg-slate-900 text-white' : 'bg-gradient-to-br from-blue-100 via-blue-400 to-blue-700 text-white'}`}>
          <div className={`absolute top-0 left-0 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] pointer-events-none ${isDarkMode ? 'opacity-5' : 'opacity-20 mix-blend-overlay'}`} />
          
          <div className={`absolute -top-32 -right-32 w-[500px] h-[500px] rounded-full blur-[100px] animate-pulse duration-[4s] ${
             isDarkMode 
             ? 'bg-blue-500 opacity-20' 
-            : 'bg-teal-300 mix-blend-overlay opacity-100' 
+            : 'bg-sky-300 mix-blend-overlay opacity-100' 
          }`} />
 
          <div className={`absolute -bottom-32 -left-32 w-[500px] h-[500px] rounded-full blur-[100px] animate-pulse delay-700 duration-[6s] ${
@@ -1147,12 +1289,13 @@ const ReviewScreen = ({ onBack, activities, foodPrefs, accommPrefs, transportPre
          }`} />
 
          <div className="p-12 relative z-10 pt-16">
+            {/* UPDATED: Removed border-2, hover black in Dark Mode */}
             <button 
                 onClick={() => { playSound('cancel'); onBack(); }} 
-                className={`text-sm font-bold mb-8 flex items-center gap-2 transition-all w-fit px-4 py-2 rounded-full hover:-translate-x-1 ${
+                className={`text-sm font-bold mb-8 flex items-center gap-2 transition-all w-fit px-4 py-2 rounded-full shadow-sm pt-4 hover:-translate-x-1 hover:text-purple-600 ${
                     isDarkMode 
-                    ? 'text-slate-400 hover:text-purple-400 bg-white/5' 
-                    : 'text-slate-500 hover:text-purple-600 bg-white/10 hover:bg-white/20 shadow-sm'
+                    ? 'text-slate-400 bg-slate-900 hover:bg-black' 
+                    : 'text-slate-500 bg-white/50 hover:bg-white' 
                 }`}
             >
                 <ChevronLeft size={16} /> Edit Details
@@ -1164,7 +1307,6 @@ const ReviewScreen = ({ onBack, activities, foodPrefs, accommPrefs, transportPre
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-                {/* Stat Cards */}
                 <div className={`backdrop-blur-md p-8 rounded-[2rem] border text-center transition-all hover:-translate-y-1 ${isDarkMode ? 'bg-white/10 border-white/10 hover:bg-white/15' : 'bg-white/10 border-white/20 shadow-lg hover:bg-white/20'}`}>
                     <div className={`text-5xl font-black mb-2 bg-clip-text text-transparent inline-block ${textGradient}`}>{totalDays}</div>
                     <div className={`text-xs font-bold uppercase tracking-widest ${isDarkMode ? 'text-slate-500' : 'text-blue-100'}`}>Days</div>
@@ -1180,13 +1322,11 @@ const ReviewScreen = ({ onBack, activities, foodPrefs, accommPrefs, transportPre
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
-                {/* Dining Profile Card */}
                 <div className={`p-8 rounded-[2rem] border space-y-6 ${isDarkMode ? 'bg-white/5 border-white/5' : 'bg-white/10 border-white/20 shadow-sm'}`}>
                     <h3 className={`font-bold text-xl flex items-center gap-3 text-white`}><Utensils className="text-orange-400"/> Dining Profile</h3>
                     <div className="flex flex-wrap gap-2">
                         {foodPrefs.cuisines.map(c => <span key={c} className={`px-3 py-1 rounded-lg text-xs font-bold ${isDarkMode ? 'bg-orange-500/20 text-orange-500' : 'bg-white/20 text-white'}`}>{c}</span>)}
                     </div>
-                    
                     <div className={`space-y-3 border-t pt-4 ${isDarkMode ? 'border-white/10' : 'border-white/20'}`}>
                         <div className="flex justify-between items-end">
                             <span className={`text-sm font-medium ${isDarkMode ? 'text-slate-500' : 'text-blue-200'}`}>Price Range</span>
@@ -1195,14 +1335,12 @@ const ReviewScreen = ({ onBack, activities, foodPrefs, accommPrefs, transportPre
                     </div>
                 </div>
 
-                {/* Stay & Travel Card */}
                 <div className={`p-8 rounded-[2rem] border space-y-6 ${isDarkMode ? 'bg-white/5 border-white/5' : 'bg-white/10 border-white/20 shadow-sm'}`}>
                     <h3 className={`font-bold text-xl flex items-center gap-3 text-white`}><Hotel className="text-purple-400"/> Stay & Travel</h3>
                     <div className="flex flex-wrap gap-2">
                         {accommPrefs.types.map(t => <span key={t} className={`px-3 py-1 rounded-lg text-xs font-bold ${isDarkMode ? 'bg-purple-500/20 text-purple-500' : 'bg-white/20 text-white'}`}>{t}</span>)}
                         {transportPrefs.modes.map(t => <span key={t} className={`px-3 py-1 rounded-lg text-xs font-bold ${isDarkMode ? 'bg-teal-500/20 text-teal-500' : 'bg-white/20 text-white'}`}>{t}</span>)}
                     </div>
-                    
                     <div className={`space-y-3 border-t pt-4 ${isDarkMode ? 'border-white/10' : 'border-white/20'}`}>
                         <div className="flex justify-between items-end">
                             <span className={`text-sm font-medium ${isDarkMode ? 'text-slate-500' : 'text-blue-200'}`}>Comfort Level</span>
@@ -1231,77 +1369,87 @@ const MainApp = () => {
   const [showLanding, setShowLanding] = useState(true);
   const [activities, setActivities] = useState({});
   const [editingActivity, setEditingActivity] = useState(null);
-  const [currentStep, setCurrentStep] = useState(1);
-  const [completedSteps, setCompletedSteps] = useState([1]);
   const [viewMode, setViewMode] = useState('calendar');
   const [selectedDate, setSelectedDate] = useState(new Date());
-  
-  const [foodPreferences, setFoodPreferences] = useState({ cuisines: [], dietary: [], allergies: '', priceRange: [1, 3], minRating: 3.5, maxDistance: 15, mealsPerDay: 3 });
-  const [accommodationPreferences, setAccommodationPreferences] = useState({ types: [], minStars: 3, maxStars: 5, minPrice: 50, maxPrice: 400, amenities: [], maxTravelTime: 20, rooms: 1 });
-  const [transportationPreferences, setTransportationPreferences] = useState({ modes: [], priority: 'cost', budget: 50, accessibility: 'none' });
+  const [activeSection, setActiveSection] = useState('Itinerary');
+
+  const [foodPreferences, setFoodPreferences] = useState(DEFAULT_FOOD_PREFS);
+  const [accommodationPreferences, setAccommodationPreferences] = useState(DEFAULT_ACCOM_PREFS);
+  const [transportationPreferences, setTransportationPreferences] = useState(DEFAULT_TRANS_PREFS);
+
+  const itineraryRef = useRef(null);
+  const foodRef = useRef(null);
+  const stayRef = useRef(null);
+  const transportRef = useRef(null);
+  const reviewRef = useRef(null);
+
+  useEffect(() => {
+    const observerOptions = {
+        root: null,
+        rootMargin: '-100px 0px -50% 0px',
+        threshold: 0
+    };
+
+    const observerCallback = (entries) => {
+        entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+                const idMap = {
+                    'itinerary-section': 'Itinerary',
+                    'food-section': 'Food',
+                    'stay-section': 'Stay',
+                    'transport-section': 'Travel',
+                    'review-section': 'Review'
+                };
+                if(idMap[entry.target.id]) {
+                    setActiveSection(idMap[entry.target.id]);
+                }
+            }
+        });
+    };
+
+    const observer = new IntersectionObserver(observerCallback, observerOptions);
+    
+    if (itineraryRef.current) observer.observe(itineraryRef.current);
+    if (foodRef.current) observer.observe(foodRef.current);
+    if (stayRef.current) observer.observe(stayRef.current);
+    if (transportRef.current) observer.observe(transportRef.current);
+    if (reviewRef.current) observer.observe(reviewRef.current);
+
+    return () => observer.disconnect();
+  }, [showLanding]);
 
   const handleDragStart = (e, category) => { e.dataTransfer.setData('category', category); currentDragData = { category, blockIndex: null }; };
   
-  // --- NEW FEATURE: AUTO ADD ---
   const findFirstAvailableSlot = (dateActivities, duration) => {
-    // 1. Sort blocks by start time
     const sorted = [...(dateActivities || [])].sort((a, b) => a.startTime - b.startTime);
     const MAX_MINUTES = 1440;
-
-    // 2. Check gap before first block (if any)
-    if (sorted.length === 0) return 0; // Empty day, start at 00:00
-    
-    // If the gap between 0 and first block is large enough
+    if (sorted.length === 0) return 0;
     if (sorted[0].startTime >= duration) return 0;
-
-    // 3. Check gaps between blocks
     for (let i = 0; i < sorted.length - 1; i++) {
         const currentEnd = sorted[i].startTime + sorted[i].duration;
         const nextStart = sorted[i+1].startTime;
-        
-        // If there is space between this block and the next
         if (nextStart - currentEnd >= duration) {
             return currentEnd;
         }
     }
-
-    // 4. Check gap after last block
     const lastBlock = sorted[sorted.length - 1];
     const lastEnd = lastBlock.startTime + lastBlock.duration;
-    
     if (MAX_MINUTES - lastEnd >= duration) {
         return lastEnd;
     }
-
-    return null; // No valid slot found
+    return null;
   };
 
   const handleAutoAdd = (category) => {
-    // Removed default click sound to allow ActivityBlock to handle its specific 'pop' sound
-    
     const cat = ACTIVITY_CATEGORIES.find(c => c.id === category);
     const dateKey = selectedDate.toDateString();
     const currentDayActivities = activities[dateKey] || [];
-    
-    // Find slot
     const startTime = findFirstAvailableSlot(currentDayActivities, cat.defaultDuration);
-    
     if (startTime !== null) {
-        const newActivity = {
-            category,
-            title: cat.defaultTitle,
-            location: '',
-            duration: cat.defaultDuration,
-            notes: '',
-            startTime: startTime
-        };
+        const newActivity = { category, title: cat.defaultTitle, location: '', duration: cat.defaultDuration, notes: '', startTime: startTime };
         handleDrop(newActivity, selectedDate);
-    } else {
-        // Optional: Play error sound or show toast if full
-        console.log("No space available for this activity");
     }
   };
-  // -----------------------------
 
   const handleDrop = (newActivity, date) => {
     const dateKey = date.toDateString();
@@ -1316,16 +1464,17 @@ const MainApp = () => {
     setEditingActivity(null);
   };
   
-  // UPDATED: goToStep now accepts playClick param (defaults to true)
-  const goToStep = (s, playClick = true) => { 
-      const max = Math.max(...completedSteps, 1); 
-      if (s <= max + 1 || s === 1) { 
-          if (playClick) playSound('click'); 
-          setCurrentStep(s); 
-          if (!completedSteps.includes(s)) setCompletedSteps([...completedSteps, s]); 
-      } 
+  const scrollToSection = (ref, playClick = true) => {
+    if (playClick) playSound('click');
+    if (ref.current) {
+        ref.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
   };
-  const advanceStep = (n) => { if (!completedSteps.includes(n)) setCompletedSteps([...completedSteps, n]); playSound('success'); setCurrentStep(n); };
+
+  // HOVER GLOW
+  const containerHover = isDarkMode 
+    ? 'hover:shadow-[0_0_40px_-10px_rgba(59,130,246,0.3)]' 
+    : 'hover:shadow-[0_0_40px_-10px_rgba(29,78,216,0.9)]';
 
   const hasActivities = Object.values(activities).some(dayActs => dayActs.length > 0);
 
@@ -1334,9 +1483,8 @@ const MainApp = () => {
   }
 
   return (
-    // Updated LIGHT MODE gradient to match Landing Page's deeper blue (Blue 50 -> Blue 200 -> Blue 600)
-    <div className={`min-h-screen bg-fixed transition-colors duration-500 ${isDarkMode ? 'bg-slate-950' : 'bg-white'}`} style={{ background: isDarkMode ? 'linear-gradient(to bottom, #0f172a, #172554)' : 'linear-gradient(to bottom, #eff6ff, #93c5fd, #1d4ed8)' }}>
-        {/* Main App Background Blobs - Updated for Light Mode visibility */}
+    <div className={`min-h-screen bg-fixed transition-colors duration-500 ${isDarkMode ? 'bg-slate-950' : 'bg-white'}`} style={{ background: isDarkMode ? 'linear-gradient(to bottom, #0f172a, #172554)' : 'linear-gradient(to bottom, #eff6ff, #dbeafe, #60a5fa)' }}>
+        
         <div className="fixed top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
              <div className={`absolute -top-[20%] -left-[10%] w-[70%] h-[70%] rounded-full blur-[120px] ${isDarkMode ? 'bg-blue-900/20' : 'bg-blue-600/40'}`} />
              <div className={`absolute top-[40%] -right-[10%] w-[60%] h-[60%] rounded-full blur-[120px] ${isDarkMode ? 'bg-purple-900/20' : 'bg-purple-600/40'}`} />
@@ -1344,45 +1492,47 @@ const MainApp = () => {
         </div>
 
       <header className={`sticky top-0 z-50 backdrop-blur-md border-b shadow-sm ${isDarkMode ? 'bg-slate-900/70 border-slate-800' : 'bg-white/70 border-white/50'}`}>
-        {/* HEADER LAYOUT FIX: Grid for perfect center alignment */}
         <div className="max-w-7xl mx-auto px-6 py-4 grid grid-cols-3 items-center">
             
-            {/* LEFT: Logo - UPDATED CLICK SOUND */}
             <div className="flex items-center gap-3 justify-start">
-               {/* REPLACED: Added playSound('cancel') to logo click */}
                <img src={logo} onClick={() => { playSound('cancel'); setShowLanding(true); }} alt="Tratlus Logo" className="w-10 h-10 object-contain cursor-pointer" />
-              
-              {/* UPDATED HEADER TITLE: Vivid Fuchsia for Dark Mode */}
               <h1 className={`text-2xl font-black bg-clip-text text-transparent tracking-tight ${isDarkMode ? 'bg-gradient-to-r from-fuchsia-500 to-blue-500' : 'bg-gradient-to-r from-fuchsia-600 to-blue-600'}`}>Tratlus</h1>
             </div>
             
-            {/* CENTER: Navigation Pills */}
             <div className="flex justify-center">
                 <div className={`hidden md:flex items-center gap-1 p-1.5 rounded-full border ${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-slate-100/50 border-white/50'}`}>
-                {['Itinerary', 'Food', 'Stay', 'Travel', 'Review'].map((step, i) => {
-                    const s = i + 1;
-                    const isC = currentStep === s;
-                    const isD = completedSteps.includes(s);
+                {[
+                    { name: 'Itinerary', ref: itineraryRef },
+                    { name: 'Food', ref: foodRef },
+                    { name: 'Stay', ref: stayRef },
+                    { name: 'Travel', ref: transportRef },
+                    { name: 'Review', ref: reviewRef }
+                ].map((item) => {
+                    const isActive = activeSection === item.name;
                     return (
-                    <button key={step} disabled={!isD && !isC} onClick={() => (isD || isC) && goToStep(s)} 
-                        className={`px-5 py-2 rounded-full text-xs font-bold transition-all duration-300 ${isC ? (isDarkMode ? 'bg-slate-700 text-white shadow-md scale-105' : 'bg-white text-slate-800 shadow-md scale-105') : isD ? (isDarkMode ? 'text-slate-400 hover:text-slate-200 hover:bg-slate-700/50' : 'text-slate-500 hover:text-slate-800 hover:bg-white/50') : (isDarkMode ? 'text-slate-700 cursor-not-allowed' : 'text-slate-300 cursor-not-allowed')}`}>
-                        {step}
+                    <button key={item.name} onClick={() => scrollToSection(item.ref)} 
+                        className={`px-5 py-2 rounded-full text-xs font-bold transition-all duration-300 ${
+                            isActive 
+                            ? (isDarkMode ? 'bg-slate-700 text-white shadow-md scale-105' : 'bg-white text-slate-800 shadow-md scale-105') 
+                            : (isDarkMode ? 'text-slate-400 hover:text-slate-200 hover:bg-slate-700/50' : 'text-slate-500 hover:text-slate-800 hover:bg-white/50')
+                        }`}>
+                        {item.name}
                     </button>
                     );
                 })}
                 </div>
             </div>
             
-            {/* RIGHT: Theme Toggle (Anchored to right) */}
             <div className="flex justify-end">
                 <ThemeToggle />
             </div>
         </div>
       </header>
 
-      <main className="relative z-10 max-w-7xl mx-auto px-6 py-8">
-        {currentStep === 1 && (
-          <div className="animate-in slide-in-from-bottom-8 fade-in duration-500">
+      <main className="relative z-10 max-w-7xl mx-auto px-6 py-8 space-y-20 pb-40">
+        
+        {/* STEP 1: ITINERARY */}
+        <div ref={itineraryRef} id="itinerary-section" className="scroll-mt-32">
             <div className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
                 <div>
                     <h2 className={`text-5xl font-black mb-2 tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>Plan Your Journey</h2>
@@ -1390,8 +1540,8 @@ const MainApp = () => {
                 </div>
                 
                 <div className={`transition-all duration-500 ${hasActivities ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'}`}>
-                  <button onClick={() => advanceStep(2)} className={`px-8 py-4 rounded-2xl font-bold shadow-xl hover:scale-105 transition-all flex items-center gap-2 ${isDarkMode ? 'bg-white text-slate-900' : 'bg-slate-900 text-white'}`}>
-                    Next Step <ChevronRight size={18}/>
+                  <button onClick={() => scrollToSection(foodRef)} className={`px-8 py-4 rounded-2xl font-bold shadow-xl hover:scale-105 transition-all flex items-center gap-2 ${isDarkMode ? 'bg-white text-slate-900' : 'bg-slate-900 text-white'}`}>
+                    Start Preferences <ChevronRight size={18}/>
                   </button>
                 </div>
             </div>
@@ -1399,10 +1549,10 @@ const MainApp = () => {
             <div className={`grid grid-cols-1 ${viewMode === 'day' ? 'lg:grid-cols-4' : ''} gap-8`}>
               {viewMode === 'day' && (
                 <div className="lg:col-span-1 animate-in slide-in-from-left-8 duration-500 delay-100">
-                  <div className={`backdrop-blur-xl rounded-[2rem] shadow-xl p-6 sticky top-28 border ${isDarkMode ? 'bg-slate-900/60 border-slate-700' : 'bg-white/60 border-white/60'}`}>
+                  {/* UPDATED: Removed shadow-xl */}
+                  <div className={`backdrop-blur-xl rounded-[2rem] p-6 sticky top-28 border transition-all ${containerHover} ${isDarkMode ? 'bg-slate-900/60 border-slate-700' : 'bg-white/60 border-white/60'}`}>
                     <h3 className={`font-black text-lg mb-6 flex items-center gap-2 ${isDarkMode ? 'text-white' : 'text-slate-800'}`}><Plus className="text-blue-500" strokeWidth={3} /> Add Activities</h3>
                     <div className="space-y-3">
-                      {/* Pass onAutoAdd to ActivityBlock */}
                       {ACTIVITY_CATEGORIES.map(cat => <ActivityBlock key={cat.id} category={cat.id} onDragStart={handleDragStart} onAutoAdd={handleAutoAdd} />)}
                     </div>
                   </div>
@@ -1416,14 +1566,28 @@ const MainApp = () => {
                 }
               </div>
             </div>
-          </div>
-        )}
+        </div>
 
-        {/* UPDATED: Pass false to goToStep to prevent double sounds */}
-        {currentStep === 2 && <div className="animate-in zoom-in-95 fade-in duration-500"><FoodPreferencesScreen onBack={() => goToStep(1, false)} onNext={() => advanceStep(3)} preferences={foodPreferences} setPreferences={setFoodPreferences} /></div>}
-        {currentStep === 3 && <div className="animate-in zoom-in-95 fade-in duration-500"><AccommodationScreen onBack={() => goToStep(2, false)} onNext={() => advanceStep(4)} preferences={accommodationPreferences} setPreferences={setAccommodationPreferences} /></div>}
-        {currentStep === 4 && <div className="animate-in zoom-in-95 fade-in duration-500"><TransportationScreen onBack={() => goToStep(3, false)} onNext={() => advanceStep(5)} preferences={transportationPreferences} setPreferences={setTransportationPreferences} /></div>}
-        {currentStep === 5 && <div className="animate-in zoom-in-95 fade-in duration-500"><ReviewScreen onBack={() => goToStep(4, false)} activities={activities} foodPrefs={foodPreferences} accommPrefs={accommodationPreferences} transportPrefs={transportationPreferences} /></div>}
+        {/* STEP 2: FOOD */}
+        <div ref={foodRef} id="food-section" className="scroll-mt-32">
+            <FoodPreferencesScreen onReset={() => setFoodPreferences(DEFAULT_FOOD_PREFS)} onNext={() => scrollToSection(stayRef)} preferences={foodPreferences} setPreferences={setFoodPreferences} />
+        </div>
+
+        {/* STEP 3: STAY */}
+        <div ref={stayRef} id="stay-section" className="scroll-mt-32">
+            <AccommodationScreen onReset={() => setAccommodationPreferences(DEFAULT_ACCOM_PREFS)} onNext={() => scrollToSection(transportRef)} preferences={accommodationPreferences} setPreferences={setAccommodationPreferences} />
+        </div>
+
+        {/* STEP 4: TRANSPORT */}
+        <div ref={transportRef} id="transport-section" className="scroll-mt-32">
+            <TransportationScreen onReset={() => setTransportationPreferences(DEFAULT_TRANS_PREFS)} onNext={() => scrollToSection(reviewRef)} preferences={transportationPreferences} setPreferences={setTransportationPreferences} />
+        </div>
+
+        {/* STEP 5: REVIEW */}
+        <div ref={reviewRef} id="review-section" className="scroll-mt-32">
+            <ReviewScreen onBack={() => scrollToSection(itineraryRef)} activities={activities} foodPrefs={foodPreferences} accommPrefs={accommodationPreferences} transportPrefs={transportationPreferences} />
+        </div>
+
       </main>
 
       {editingActivity && <ActivityModal block={editingActivity.block} onSave={handleSaveActivity} onClose={() => setEditingActivity(null)} />}
