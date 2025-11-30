@@ -57,6 +57,7 @@ import {
   Landmark,
   Music,
   TreePine,
+  SkipForward,
 } from "lucide-react";
 // ORM imports removed - using local state only for swipe tracking
 import {
@@ -375,6 +376,7 @@ function App() {
   const [showConfetti, setShowConfetti] = useState(false);
   const [showContinueButton, setShowContinueButton] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
+  const [isAutoCompleting, setIsAutoCompleting] = useState(false);
 
   // Questionnaire state
   const [questionnaireStep, setQuestionnaireStep] = useState(1);
@@ -398,6 +400,7 @@ function App() {
   const [wakeUpTime, setWakeUpTime] = useState("08:00");
   const [sleepTime, setSleepTime] = useState("22:00");
   const [totalBudget, setTotalBudget] = useState<number | undefined>(undefined);
+  const [formError, setFormError] = useState("");
 
   // Itinerary state
   const [itinerary, setItinerary] = useState<TravelItinerary | null>(null);
@@ -520,6 +523,67 @@ function App() {
     setAppState("landing");
   }, []);
 
+  const handleAutoComplete = useCallback(() => {
+    if (isAutoCompleting) return;
+    setIsAutoCompleting(true);
+
+    const newSwipedCardIds = new Set(swipedCardIds);
+    const newCategoryProgress = { ...categoryProgress };
+    const newPreferenceScores = { ...preferenceScores };
+    const newCompletedCategories = new Set(completedCategories);
+
+    CATEGORIES.forEach(category => {
+      const required = REQUIRED_SWIPES_MAP[category.name];
+      let currentSwipes = newCategoryProgress[category.name];
+
+      if (currentSwipes >= required) {
+        return; // Skip already completed categories
+      }
+
+      const swipesNeeded = required - currentSwipes;
+      const unswipedCards = allCards[category.name].filter(c => !newSwipedCardIds.has(c.id));
+
+      const cardsToSwipe = shuffleArray(unswipedCards).slice(0, swipesNeeded);
+
+      cardsToSwipe.forEach(card => {
+        const direction = Math.random() < 0.5 ? "left" : "right";
+        const scoreChange = direction === "right" ? 1 : -1;
+
+        for (const tag of card.tags) {
+          newPreferenceScores[tag] = (newPreferenceScores[tag] || 0) + scoreChange;
+        }
+
+        newSwipedCardIds.add(card.id);
+        newCategoryProgress[category.name]++;
+      });
+
+      if (newCategoryProgress[category.name] >= required) {
+        newCompletedCategories.add(category.name);
+      }
+    });
+
+    // Batch update state
+    setSwipedCardIds(newSwipedCardIds);
+    setPreferenceScores(newPreferenceScores);
+    setCategoryProgress(newCategoryProgress);
+    setCompletedCategories(newCompletedCategories);
+
+    // After auto-completing, check if all categories are finished
+    const allComplete = CATEGORIES.every(c => newCompletedCategories.has(c.name));
+    if (allComplete) {
+      setShowConfetti(true);
+      setTimeout(() => {
+        setShowConfetti(false);
+        setAppState("questionnaire");
+      }, 3000);
+    } else {
+      // Move to the next incomplete category if needed
+      handleContinueToNextCategory();
+    }
+
+    setIsAutoCompleting(false);
+  }, [allCards, categoryProgress, completedCategories, preferenceScores, swipedCardIds, isAutoCompleting]);
+
   // Start swiping - preload all cards
   const handleStartSwiping = useCallback(async () => {
     setAppState("loading");
@@ -615,6 +679,15 @@ function App() {
         setCompletedCategories(newCompleted);
         setShowBadge(currentCategory.name);
         setTimeout(() => setShowBadge(null), 2000);
+
+        // Check if all categories are now complete
+        if (newCompleted.size === CATEGORIES.length) {
+          setShowConfetti(true);
+          setTimeout(() => {
+            setShowConfetti(false);
+            setAppState("questionnaire");
+          }, 3000);
+        }
       }
 
       // Show continue button if no more cards left
@@ -726,6 +799,8 @@ Please create a detailed day-by-day itinerary that aligns with these preferences
           setItinerary(data.itinerary);
           // No database saving - itinerary is kept in local state only
           setAppState("itinerary");
+          // Pre-fetch nearby activities in the background
+          handleFetchNearbyActivities();
         },
         onError: (error) => {
           console.error("Error generating itinerary:", error);
@@ -889,11 +964,28 @@ Your response must be EXACTLY this structure:
     if (!itinerary) return;
 
     setIsLoadingNearby(true);
-    setShowNearbyActivities(true);
     setNearbyActivities([]); // Clear previous results
 
+    const likedTags = Object.entries(preferenceScores)
+      .filter(([, score]) => score > 0)
+      .sort(([, a], [, b]) => b - a)
+      .slice(0, 10)
+      .map(([tag]) => tag)
+      .join(", ");
+
+    const preferencesPrompt = `
+User Preferences:
+- Interests: ${likedTags || "general"}
+- Dietary Needs: ${dietaryNeeds.join(", ") || "none"}
+- Food Allergies: ${foodAllergies || "none"}
+- Meal Budget: ${mealBudget}
+- Adventurousness: ${foodAdventurousness}/10
+`;
+
     // Build a structured prompt that will return valid JSON
-    const prompt = `You are a local travel guide for ${itinerary.destination}. Generate exactly 15 popular nearby activities and attractions that tourists should visit.
+    const prompt = `You are a local travel guide for ${itinerary.destination}. Generate exactly 15 popular nearby activities and attractions that tourists should visit, keeping in mind the user's preferences.
+
+${preferencesPrompt}
 
 CRITICAL: Respond with ONLY a valid JSON object. No markdown, no code blocks, no explanatory text.
 
@@ -913,7 +1005,7 @@ Your response must be EXACTLY this structure:
   "totalEstimatedCost": 0
 }
 
-Generate 15 REAL places in ${itinerary.destination}:
+Generate 15 REAL places in ${itinerary.destination} based on the user's preferences:
 - 5 restaurants/cafes (type: "food")
 - 5 attractions/museums (type: "attraction")
 - 5 activities/parks (type: "activity")
@@ -1609,7 +1701,11 @@ Return ONLY a single JSON object (no array, no wrapper):
   };
 
   // Calculate overall progress
-  const totalSwipes = Object.values(categoryProgress).reduce((a, b) => a + b, 0);
+  const totalSwipes = Object.keys(categoryProgress).reduce((acc, category) => {
+    const progress = categoryProgress[category as CategoryName];
+    const required = REQUIRED_SWIPES_MAP[category as CategoryName];
+    return acc + Math.min(progress, required);
+  }, 0);
   const maxSwipes = Object.values(REQUIRED_SWIPES_MAP).reduce((a, b) => a + b, 0);
   const overallProgress = Math.round((totalSwipes / maxSwipes) * 100);
   const tratlusScore = Math.min(100, overallProgress);
@@ -1940,7 +2036,7 @@ Return ONLY a single JSON object (no array, no wrapper):
           {/* Explore & Map Buttons */}
           <div className="flex gap-2 flex-wrap mt-4">
             <Button
-              onClick={handleFetchNearbyActivities}
+              onClick={() => setShowNearbyActivities(true)}
               variant="outline"
               className="flex-1 border-purple-300 text-purple-700 hover:bg-purple-50"
               disabled={isLoadingNearby}
@@ -2804,7 +2900,11 @@ Return ONLY a single JSON object (no array, no wrapper):
                   <Button variant="outline" onClick={() => setQuestionnaireStep(2)} className="flex-1">
                     <ChevronLeft className="size-4 mr-2" /> Back
                   </Button>
-                  <Button onClick={handleGenerateItinerary} className="flex-1 bg-cyan-600 hover:bg-cyan-700">
+                  <Button
+                    onClick={handleGenerateItinerary}
+                    className="flex-1 bg-cyan-600 hover:bg-cyan-700"
+                    disabled={!tripDates.from || !tripDates.to || !departureLocation.trim() || (!surpriseMe && !destination.trim())}
+                  >
                     Generate Itinerary
                   </Button>
                 </div>
@@ -2837,6 +2937,16 @@ Return ONLY a single JSON object (no array, no wrapper):
                 title="Reset all preferences"
               >
                 <RotateCcw className="size-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleAutoComplete}
+                className="text-blue-500 hover:text-blue-700 hover:bg-blue-50 p-2 h-auto"
+                title="Auto-complete minimum swipes"
+                disabled={isAutoCompleting}
+              >
+                {isAutoCompleting ? <Loader2 className="size-4 animate-spin" /> : <SkipForward className="size-4" />}
               </Button>
             </div>
           </div>
@@ -2886,7 +2996,7 @@ Return ONLY a single JSON object (no array, no wrapper):
                       {cat.icon}
                     </div>
                   </div>
-                  <span className="text-[10px] font-medium">{progress}/{required}</span>
+                  <span className="text-[10px] font-medium">{Math.min(progress, required)}/{required}</span>
                 </button>
               );
             })}
@@ -3064,7 +3174,7 @@ Return ONLY a single JSON object (no array, no wrapper):
             <div className="text-center animate-pulse">
               <PartyPopper className="size-24 text-amber-500 mx-auto mb-4" />
               <h2 className="text-3xl font-bold text-amber-900">100% Complete!</h2>
-              <p className="text-amber-700">Your Travel DNA is ready</p>
+              <p className="text-amber-700">Swipe Profile Calibrated</p>
             </div>
           </div>
           {/* Simple confetti particles */}

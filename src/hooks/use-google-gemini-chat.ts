@@ -120,11 +120,16 @@ For "food" type activities, ALWAYS include menuHighlights with 3-5 signature dis
 For other types, set menuHighlights to null or empty array.
 
 CRITICAL - INTER-ACTIVITY TRANSPORTATION:
-Between EVERY main activity, you MUST include a "transport-between" type activity block that describes how to get from the previous location to the next.
-- These transport blocks should be smaller/simpler entries showing the commute method (walking, taxi, metro, bus, etc.)
-- Include estimated travel time in the description
-- estimatedCost should reflect taxi fare, transit ticket, or 0 for walking
-- Example: {"time": "10:45 AM", "title": "Walk to Museum", "location": "Via Main Street", "description": "15 minute walk through the historic district", "estimatedCost": 0, "type": "transport-between"}
+Between EVERY main activity (like a museum visit or a restaurant meal), you MUST include a "transport-between" type activity block. This applies to ALL modes of travel: walking, taxi, bus, metro, train, etc. These blocks MUST be simple and MUST follow this format:
+- "type": "transport-between"
+- "title": A brief title like "Taxi to Dinner" or "Metro to Eiffel Tower".
+- "description": Include ONLY the estimated travel time (e.g., "Approx. 25 minute ride").
+- "estimatedCost": The fare for the taxi, bus, or train.
+- Example for a taxi: {"time": "6:30 PM", "title": "Taxi to Restaurant", "location": "N/A", "description": "Approx. 15 minute ride", "estimatedCost": 15, "type": "transport-between"}
+- Example for a walk: {"time": "10:45 AM", "title": "Walk to Museum", "location": "Via Main Street", "description": "10 minute walk", "estimatedCost": 0, "type": "transport-between"}
+
+Do NOT create full, detailed activity blocks for regular city transit like buses or taxis. They must be \`transport-between\` blocks.
+Main "transportation" activity types should only be used for major travel events, like the main flight to the destination.
 
 Include 4-6 MAIN activities per day, PLUS transport-between blocks connecting each activity. Estimate costs in USD. Consider dietary restrictions, budget constraints, accommodation preferences, and user interests.`;
 
