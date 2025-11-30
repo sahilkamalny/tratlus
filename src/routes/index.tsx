@@ -799,8 +799,8 @@ Please create a detailed day-by-day itinerary that aligns with these preferences
           setItinerary(data.itinerary);
           // No database saving - itinerary is kept in local state only
           setAppState("itinerary");
-          // Pre-fetch nearby activities in the background
-          handleFetchNearbyActivities();
+          // Pre-fetch nearby activities in the background, passing the new itinerary directly
+          handleFetchNearbyActivities(data.itinerary);
         },
         onError: (error) => {
           console.error("Error generating itinerary:", error);
@@ -960,8 +960,9 @@ Your response must be EXACTLY this structure:
   };
 
   // Fetch nearby activities for the destination
-  const handleFetchNearbyActivities = async () => {
-    if (!itinerary) return;
+  const handleFetchNearbyActivities = async (itineraryData?: TravelItinerary) => {
+    const targetItinerary = itineraryData || itinerary;
+    if (!targetItinerary) return;
 
     setIsLoadingNearby(true);
     setNearbyActivities([]); // Clear previous results
@@ -983,7 +984,7 @@ User Preferences:
 `;
 
     // Build a structured prompt that will return valid JSON
-    const prompt = `You are a local travel guide for ${itinerary.destination}. Generate exactly 15 popular nearby activities and attractions that tourists should visit, keeping in mind the user's preferences.
+    const prompt = `You are a local travel guide for ${targetItinerary.destination}. Generate exactly 15 popular nearby activities and attractions that tourists should visit, keeping in mind the user's preferences.
 
 ${preferencesPrompt}
 
@@ -991,7 +992,7 @@ CRITICAL: Respond with ONLY a valid JSON object. No markdown, no code blocks, no
 
 Your response must be EXACTLY this structure:
 {
-  "destination": "${itinerary.destination}",
+  "destination": "${targetItinerary.destination}",
   "tripDates": { "startDate": "2024-01-01", "endDate": "2024-01-02" },
   "days": [{
     "dayNumber": 1,
@@ -1005,7 +1006,7 @@ Your response must be EXACTLY this structure:
   "totalEstimatedCost": 0
 }
 
-Generate 15 REAL places in ${itinerary.destination} based on the user's preferences:
+Generate 15 REAL places in ${targetItinerary.destination} based on the user's preferences:
 - 5 restaurants/cafes (type: "food")
 - 5 attractions/museums (type: "attraction")
 - 5 activities/parks (type: "activity")
