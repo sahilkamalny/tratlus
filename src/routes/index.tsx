@@ -59,6 +59,7 @@ import {
   TreePine,
   SkipForward,
 } from "lucide-react";
+import { LandingPage } from "@/components/landing/LandingPage";
 // ORM imports removed - using local state only for swipe tracking
 import {
   useGenerateItineraryMutation,
@@ -285,7 +286,7 @@ const TRAVEL_CARDS: TravelCard[] = [
   { id: "vibe-16", category: "Vibes", title: "History Buff", description: "Walk through time and ancient sites", imageUrl: "https://images.unsplash.com/photo-1552832230-c0197dd311b5?w=800", tags: ["history", "educational", "culture", "learning"] },
   { id: "vibe-17", category: "Vibes", title: "Nature Lover", description: "Immerse in natural beauty", imageUrl: "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800", tags: ["nature", "outdoors", "peaceful", "eco-friendly"] },
   { id: "vibe-18", category: "Vibes", title: "Urban Explorer", description: "Discover city life and hidden corners", imageUrl: "https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?w=800", tags: ["urban", "modern", "exploring", "culture"] },
-  { id: "vibe-19", category: "Vibes", title: "Beach Bum", description: "Sun, sand, and saltwater life", imageUrl: "https://images.unsplash.com/photo-1473116763249-2faaef81ccda?w=800", tags: ["beach", "relaxing", "tropical", "laid-back"] },
+  { id: "vibe-19", category: "Vibes", title: "Beach Bum", description: "Sun, sand, and saltwater life", imageUrl: "https://images.unsplash.com/photo-1473116763249-2faaef81ccda?w=800", tags: ["beach", "relaxing", "tropical", "laid-100back"] },
   { id: "vibe-20", category: "Vibes", title: "Mountain Life", description: "High altitude adventures and views", imageUrl: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800", tags: ["mountains", "adventure", "nature", "scenic"] },
   { id: "vibe-21", category: "Vibes", title: "Artistic Inspiration", description: "Find creativity in new places", imageUrl: "https://images.unsplash.com/photo-1460661419201-fd4cecdf8a8b?w=800", tags: ["art", "creative", "inspiring", "culture"] },
   { id: "vibe-22", category: "Vibes", title: "Volunteer Tourism", description: "Give back while traveling", imageUrl: "https://images.unsplash.com/photo-1559027615-cd4628902d4a?w=800", tags: ["meaningful", "giving-back", "community", "purposeful"] },
@@ -1718,43 +1719,7 @@ Return ONLY a single JSON object (no array, no wrapper):
   // Render based on app state
   if (appState === "landing") {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-amber-50 to-green-50 flex flex-col items-center justify-center p-4">
-        <div className="max-w-md w-full text-center">
-          <div className="mb-8">
-            <Plane className="size-20 mx-auto mb-4 text-cyan-600" />
-            <h1 className="text-4xl font-bold text-amber-900 mb-2">Tratlus</h1>
-            <p className="text-lg text-amber-700">Discover your perfect travel style through swiping</p>
-          </div>
-
-          <Card className="mb-6">
-            <CardContent className="pt-6">
-              <div className="grid grid-cols-3 gap-4 mb-6">
-                {CATEGORIES.map((cat) => (
-                  <div key={cat.name} className="text-center">
-                    <div className="size-8 mx-auto mb-2 text-amber-600 flex items-center justify-center">
-                      {cat.icon}
-                    </div>
-                    <span className="text-sm text-amber-700">{cat.displayName}</span>
-                  </div>
-                ))}
-              </div>
-              <p className="text-amber-600 text-sm mb-4">
-                Swipe through travel options to build your unique travel preference profile.
-                We'll create a personalized itinerary just for you!
-              </p>
-            </CardContent>
-          </Card>
-
-          <Button
-            onClick={handleStartSwiping}
-            size="lg"
-            className="w-full bg-cyan-600 hover:bg-cyan-700 text-lg py-6"
-          >
-            <Plane className="size-5 mr-2" />
-            Start Swiping
-          </Button>
-        </div>
-      </div>
+      <LandingPage onStart={handleStartSwiping} />
     );
   }
 
@@ -2080,7 +2045,7 @@ Return ONLY a single JSON object (no array, no wrapper):
 
             {/* Category Filter */}
             <div className="flex gap-2 flex-wrap mt-4">
-              {[
+              {[ 
                 { id: "all", label: "All", icon: <Sparkles className="size-3" /> },
                 { id: "food", label: "Food", icon: <Coffee className="size-3" /> },
                 { id: "attraction", label: "Attractions", icon: <Landmark className="size-3" /> },
@@ -2482,7 +2447,7 @@ Return ONLY a single JSON object (no array, no wrapper):
               <div>
                 <Label className="mb-2 block">Activity Type</Label>
                 <div className="grid grid-cols-2 gap-2">
-                  {[
+                  {[ 
                     { value: "food", label: "Food", icon: <Utensils className="size-4" /> },
                     { value: "attraction", label: "Attraction", icon: <Camera className="size-4" /> },
                     { value: "activity", label: "Activity", icon: <Compass className="size-4" /> },
@@ -2683,7 +2648,7 @@ Return ONLY a single JSON object (no array, no wrapper):
                 <div>
                   <Label className="mb-3 block">Priority</Label>
                   <div className="flex flex-wrap gap-2">
-                    {[
+                    {[ 
                       { value: "speed" as const, label: "Speed", desc: "Fastest route" },
                       { value: "cost" as const, label: "Cost", desc: "Cheapest option" },
                       { value: "comfort" as const, label: "Comfort", desc: "Most comfortable" },
