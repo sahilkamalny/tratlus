@@ -2,7 +2,7 @@
  * Authentication Integration Utilities (Legacy Compatibility Layer)
  *
  * This file provides backward-compatible exports for the authentication system.
- * The actual implementation has been migrated to creao-platform/auth.ts
+ * The actual implementation has been migrated to the sdk
  *
  * @deprecated This file is maintained for backward compatibility.
  * New code should import directly from '@/sdk/core/auth' and '@/sdk/core/request'
@@ -115,7 +115,7 @@ export const authApi = platformApi;
 /**
  * Re-export the React hook
  */
-export const useCreaoAuth = NewAuth.useCreaoAuth;
+export const useTratlusAuth = NewAuth.useTratlusAuth;
 
 /**
  * Default export - for backward compatibility
@@ -140,5 +140,5 @@ export default {
 	clearAuth,
 	refreshAuth,
 	authApi,
-	useCreaoAuth,
+	useTratlusAuth,
 };

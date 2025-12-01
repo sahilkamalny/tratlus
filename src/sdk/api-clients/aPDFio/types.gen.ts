@@ -33,7 +33,7 @@
 //          }
 //        },
 //        "parameters": {
-//          "CreaoApiNameHeader": {
+//          "TratlusApiNameHeader": {
 //            "name": "X-CREAO-API-NAME",
 //            "in": "header",
 //            "required": true,
@@ -43,7 +43,7 @@
 //            },
 //            "description": "API name identifier - must be \"aPDFio\""
 //          },
-//          "CreaoApiIdHeader": {
+//          "TratlusApiIdHeader": {
 //            "name": "X-CREAO-API-ID",
 //            "in": "header",
 //            "required": true,
@@ -53,7 +53,7 @@
 //            },
 //            "description": "API ID identifier - must be \"692952c5011e8514d549cac3\""
 //          },
-//          "CreaoApiPathHeader": {
+//          "TratlusApiPathHeader": {
 //            "name": "X-CREAO-API-PATH",
 //            "in": "header",
 //            "required": true,
@@ -150,13 +150,13 @@
 //            },
 //            "parameters": [
 //              {
-//                "$ref": "#/components/parameters/CreaoApiNameHeader"
+//                "$ref": "#/components/parameters/TratlusApiNameHeader"
 //              },
 //              {
-//                "$ref": "#/components/parameters/CreaoApiPathHeader"
+//                "$ref": "#/components/parameters/TratlusApiPathHeader"
 //              },
 //              {
-//                "$ref": "#/components/parameters/CreaoApiIdHeader"
+//                "$ref": "#/components/parameters/TratlusApiIdHeader"
 //              }
 //            ]
 //          }
@@ -173,17 +173,17 @@ export type ClientOptions = {
 /**
  * API name identifier - must be "aPDFio"
  */
-export type CreaoApiNameHeader = string;
+export type TratlusApiNameHeader = string;
 
 /**
  * API ID identifier - must be "692952c5011e8514d549cac3"
  */
-export type CreaoApiIdHeader = string;
+export type TratlusApiIdHeader = string;
 
 /**
  * API path identifier - must be "/pdf/file/create"
  */
-export type CreaoApiPathHeader = string;
+export type TratlusApiPathHeader = string;
 
 export type CreatePdfData = {
     body: {

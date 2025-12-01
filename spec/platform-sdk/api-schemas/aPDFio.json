@@ -19,7 +19,7 @@
       }
     },
     "parameters": {
-      "CreaoApiNameHeader": {
+      "TratlusApiNameHeader": {
         "name": "X-CREAO-API-NAME",
         "in": "header",
         "required": true,
@@ -29,7 +29,7 @@
         },
         "description": "API name identifier - must be \"aPDFio\""
       },
-      "CreaoApiIdHeader": {
+      "TratlusApiIdHeader": {
         "name": "X-CREAO-API-ID",
         "in": "header",
         "required": true,
@@ -39,7 +39,7 @@
         },
         "description": "API ID identifier - must be \"692952c5011e8514d549cac3\""
       },
-      "CreaoApiPathHeader": {
+      "TratlusApiPathHeader": {
         "name": "X-CREAO-API-PATH",
         "in": "header",
         "required": true,
@@ -136,13 +136,13 @@
         },
         "parameters": [
           {
-            "$ref": "#/components/parameters/CreaoApiNameHeader"
+            "$ref": "#/components/parameters/TratlusApiNameHeader"
           },
           {
-            "$ref": "#/components/parameters/CreaoApiPathHeader"
+            "$ref": "#/components/parameters/TratlusApiPathHeader"
           },
           {
-            "$ref": "#/components/parameters/CreaoApiIdHeader"
+            "$ref": "#/components/parameters/TratlusApiIdHeader"
           }
         ]
       }

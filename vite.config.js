@@ -1,11 +1,10 @@
-// import { createRequire } from "node:module";
 import { resolve } from "node:path";
 import tailwindcss from "@tailwindcss/vite";
 import { TanStackRouterVite } from "@tanstack/router-plugin/vite";
 import viteReact from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 import svgr from "vite-plugin-svgr";
-import { creaoPlugins } from "./config/vite/creao-plugin.mjs";
+import { VitePWA } from 'vite-plugin-pwa';
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -14,7 +13,6 @@ export default defineConfig({
 		"import.meta.env.TENANT_ID": JSON.stringify(process.env.TENANT_ID || ""),
 	},
 	plugins: [
-		...creaoPlugins(),
 		TanStackRouterVite({
 			autoCodeSplitting: false, // affects pick-n-edit feature. disabled for now.
 		}),
@@ -23,6 +21,32 @@ export default defineConfig({
 		}),
 		svgr(),
 		tailwindcss(),
+        VitePWA({
+            registerType: 'autoUpdate',
+            includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'logo192.png', 'logo512.png'],
+            manifest: {
+              name: 'Tratlus',
+              short_name: 'Tratlus',
+              description: 'The Travel Atlas',
+              theme_color: '#d946ef',
+              background_color: '#d946ef',
+              display: 'standalone',
+              icons: [
+                {
+                  src: 'logo192.png',
+                  sizes: '192x192',
+                  type: 'image/png',
+                  purpose: 'any maskable'
+                },
+                {
+                  src: 'logo512.png',
+                  sizes: '512x512',
+                  type: 'image/png',
+                  purpose: 'any maskable'
+                }
+              ]
+            }
+        })
 	],
 	test: {
 		globals: true,

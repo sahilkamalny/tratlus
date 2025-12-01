@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+  <defs>
+    <linearGradient id="tratlus-gradient" x1="0" y1="256" x2="256" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#00C2FF" />
+      <stop offset="80%" stop-color="#FF0099" />
+    </linearGradient>
+  </defs>
+  <g transform="translate(-30, -5)">
+    <path d="M 69 223 C 119 133, 179 78, 224 61 C 174 103, 124 173, 94 233 Q 69 238 69 223" fill="url(#tratlus-gradient)"/>
+    <path d="M 76 118 Q 75 111 83 105 C 132 90, 182 70, 219 52 C 182 80, 132 110, 82 130 Q 77 127 76 118" fill="url(#tratlus-gradient)"/>
+    <circle cx="238" cy="45" r="10" fill="url(#tratlus-gradient)"/>
+  </g>
+</svg>

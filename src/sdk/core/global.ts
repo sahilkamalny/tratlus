@@ -7,9 +7,9 @@ declare global {
 	}
 }
 
-export const APP_CONFIG = initializeCreaoSDK();
+export const APP_CONFIG = initializeTratlusSDK();
 
-function initializeCreaoSDK() {
+function initializeTratlusSDK() {
 	const config = parseCurrentUrl();
 	window.APP_CONFIG = config;
 

@@ -6,7 +6,7 @@ branch_name=current-local-version
 # Initialize and setup
 git init
 git branch -m $branch_name
-git remote add origin git@github.com:CreaoAI/codex-webapp-task.git
+
 git fetch origin
 git checkout origin/dev -- .gitignore
 

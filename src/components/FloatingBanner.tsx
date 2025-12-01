@@ -1,5 +1,5 @@
-import CreaoLogo from "@/assets/creao_logo.svg?react";
-import { useCreaoAuth } from "@/sdk/core/auth";
+import TratlusLogo from "@/assets/tratlus_logo.svg?react";
+useTratlusAuth } from "@/sdk/core/auth";
 import { useState } from "react";
 
 interface FloatingBannerProps {
@@ -46,7 +46,7 @@ export function FloatingBanner({
 		<div
 			className={`fixed ${positionClasses[position]} z-50 bg-black text-white px-3 py-1 rounded-full flex items-center space-x-1.5 shadow-lg`}
 			role="banner"
-			aria-label="Creao branding banner"
+			aria-label="Tratlus branding banner"
 		>
 			{/* Auth status indicator dot */}
 			<div className="relative">
@@ -57,9 +57,9 @@ export function FloatingBanner({
 			</div>
 
 			<span className="flex items-center space-x-1 text-sm">
-				<CreaoLogo
+				<TratlusLogo
 					className="h-2.5 w-auto align-middle fill-current text-white"
-					aria-label="Creao Logo"
+					aria-label="Tratlus Logo"
 				/>
 			</span>
 			<button

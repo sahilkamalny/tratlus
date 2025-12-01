@@ -7,13 +7,13 @@
  * Usage in built pages:
  * 1. Include this file in your built application
  * 3. Use await getAuthTokenAsync() to get the current token for API calls
- * 4. Or use the useCreaoAuth() hook in React components
+ * 4. Or use the useTratlusAuth() hook in React components
  */
 
 import { create } from "zustand";
 
 interface AuthMessage {
-	type: "CREAO_AUTH_TOKEN";
+	type: "TRATLUS_AUTH_TOKEN";
 	token: string;
 	origin: string;
 }
@@ -109,7 +109,7 @@ const useAuthStore = create<AuthStore>(
 				});
 
 				// Store in localStorage for persistence
-				localStorage.setItem("creao_auth_token", token);
+				tratlus_auth_token
 			} else {
 				// Token is invalid, clear it
 				set({
@@ -270,7 +270,7 @@ async function ensureInitialized(): Promise<void> {
  * React hook for using authentication state
  * @returns Authentication state and helper methods
  */
-export function useCreaoAuth() {
+export function useTratlusAuth() {
 	const token = useAuthStore((state) => state.token);
 	const status = useAuthStore((state) => state.status);
 	const parentOrigin = useAuthStore((state) => state.parentOrigin);

@@ -9,7 +9,7 @@ import { routeTree } from "./routeTree.gen";
 import reportWebVitals from "./sdk/core/internal/reportWebVitals.ts";
 import "./styles.css";
 
-// Initialize Creao platform SDK
+// Initialize Tratlus platform SDK
 import { APP_CONFIG } from "./sdk/core/global.ts";
 export { APP_CONFIG }; // for backward compatibility
 
