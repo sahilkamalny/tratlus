@@ -2682,7 +2682,7 @@ Return ONLY a single JSON object (no array, no wrapper):
 
                 <div>
                   <Label className="mb-3 block">Priority</Label>
-                  <div className="flex gap-2">
+                  <div className="flex flex-wrap gap-2">
                     {[
                       { value: "speed" as const, label: "Speed", desc: "Fastest route" },
                       { value: "cost" as const, label: "Cost", desc: "Cheapest option" },
