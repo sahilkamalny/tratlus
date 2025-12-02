@@ -2945,9 +2945,14 @@ Return ONLY a single JSON object (no array, no wrapper):
       )}
     >
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute -top-20 -left-20 w-[120vw] h-[120vw] sm:w-[80vw] sm:h-[80vw] sm:-top-40 sm:-left-16 rounded-full blur-[120px] sm:blur-[200px] bg-fuchsia-500/50 sm:bg-fuchsia-500/35 animate-pulse" />
-        <div className="absolute top-1/4 -right-20 w-[100vw] h-[100vw] sm:w-[70vw] sm:h-[70vw] sm:top-1/3 sm:-right-28 rounded-full blur-[120px] sm:blur-[200px] bg-blue-500/45 sm:bg-blue-500/30 animate-pulse" style={{ animationDelay: '0.5s' }} />
-        <div className="absolute bottom-0 left-1/4 w-[100vw] h-[100vw] sm:w-[70vw] sm:h-[70vw] sm:bottom-[-10%] rounded-full blur-[120px] sm:blur-[200px] bg-purple-500/45 sm:bg-purple-500/30 animate-pulse" style={{ animationDelay: '1s' }} />
+        {/* Fuchsia blob - top left */}
+        <div className="absolute top-0 left-0 w-[200vw] h-[200vw] sm:w-[80vw] sm:h-[80vw] sm:-top-40 sm:-left-16 rounded-full blur-[100px] sm:blur-[200px] bg-fuchsia-500/60 sm:bg-fuchsia-500/35 animate-pulse" style={{ transform: 'translate(-40%, -40%)' }} />
+        
+        {/* Blue blob - middle right */}
+        <div className="absolute top-1/3 right-0 w-[180vw] h-[180vw] sm:w-[70vw] sm:h-[70vw] sm:-right-28 rounded-full blur-[100px] sm:blur-[200px] bg-blue-500/55 sm:bg-blue-500/30 animate-pulse" style={{ transform: 'translate(40%, 0)', animationDelay: '0.5s' }} />
+        
+        {/* Purple blob - bottom left */}
+        <div className="absolute bottom-0 left-1/4 w-[180vw] h-[180vw] sm:w-[70vw] sm:h-[70vw] sm:bottom-[-10%] rounded-full blur-[100px] sm:blur-[200px] bg-purple-500/55 sm:bg-purple-500/30 animate-pulse" style={{ transform: 'translate(-25%, 30%)', animationDelay: '1s' }} />
         <div
           className={cn(
             "absolute inset-0 mix-blend-overlay opacity-50 bg-[size:80px_80px]",
