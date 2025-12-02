@@ -57,9 +57,15 @@ import {
   Landmark,
   Music,
   TreePine,
-  SkipForward,
+  Sun,
+  Moon,
+  Volume2,
+  VolumeX,
+  Volume1,
 } from "lucide-react";
 import { LandingPage } from "@/components/landing/LandingPage";
+import { useTheme } from "@/contexts/ThemeContext";
+import { useSound } from "@/contexts/SoundContext";
 // ORM imports removed - using local state only for swipe tracking
 import {
   useGenerateItineraryMutation,
@@ -345,6 +351,8 @@ const REQUIRED_SWIPES_MAP: Record<CategoryName, number> = {
 };
 
 function App() {
+  const { isDarkMode, toggleTheme } = useTheme();
+  const { isMuted, setIsMuted, playSound, volume, setVolume } = useSound();
   const [appState, setAppState] = useState<AppState>("landing");
   const [currentCategoryIndex, setCurrentCategoryIndex] = useState(0);
   const [cardStack, setCardStack] = useState<TravelCard[]>([]);
@@ -378,6 +386,28 @@ function App() {
   const [showContinueButton, setShowContinueButton] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
   const [isAutoCompleting, setIsAutoCompleting] = useState(false);
+  const handleThemeToggle = useCallback(() => {
+    playSound("switch");
+    toggleTheme();
+  }, [playSound, toggleTheme]);
+  const handleMuteToggle = useCallback(() => {
+    if (isMuted) {
+      setIsMuted(false);
+      setTimeout(() => playSound("click"), 0);
+    } else {
+      playSound("cancel");
+      setIsMuted(true);
+    }
+  }, [isMuted, playSound, setIsMuted]);
+  const handleVolumeSlide = useCallback(
+    (value: number) => {
+      setVolume(value);
+      if (isMuted && value > 0) {
+        setIsMuted(false);
+      }
+    },
+    [isMuted, setIsMuted, setVolume]
+  );
 
   // Questionnaire state
   const [questionnaireStep, setQuestionnaireStep] = useState(1);
@@ -489,6 +519,7 @@ function App() {
 
   // Reset all swipes and preferences (local state only - no database)
   const handleReset = useCallback(() => {
+    playSound("cancel");
     // Reset all state (no database operations needed)
     setSwipedCardIds(new Set());
     setCategoryProgress({
@@ -522,10 +553,32 @@ function App() {
     setItineraryId(null);
     setShowContinueButton(false);
     setAppState("landing");
-  }, []);
+  }, [playSound]);
+
+  const handleContinueToNextCategory = useCallback(() => {
+    playSound("click");
+    const nextIncomplete = CATEGORIES.findIndex((c, i) => i > currentCategoryIndex && !completedCategories.has(c.name));
+    if (nextIncomplete !== -1) {
+      setCurrentCategoryIndex(nextIncomplete);
+    } else {
+      const firstIncomplete = CATEGORIES.findIndex(c => !completedCategories.has(c.name));
+      if (firstIncomplete !== -1) {
+        setCurrentCategoryIndex(firstIncomplete);
+      } else {
+        setShowConfetti(true);
+        setTimeout(() => {
+          setShowConfetti(false);
+          setAppState("questionnaire");
+        }, 3000);
+        playSound("success");
+      }
+    }
+    setShowContinueButton(false);
+  }, [completedCategories, currentCategoryIndex, playSound]);
 
   const handleAutoComplete = useCallback(() => {
     if (isAutoCompleting) return;
+    playSound("switch");
     setIsAutoCompleting(true);
 
     const newSwipedCardIds = new Set(swipedCardIds);
@@ -572,6 +625,7 @@ function App() {
     // After auto-completing, check if all categories are finished
     const allComplete = CATEGORIES.every(c => newCompletedCategories.has(c.name));
     if (allComplete) {
+      playSound("success");
       setShowConfetti(true);
       setTimeout(() => {
         setShowConfetti(false);
@@ -581,9 +635,8 @@ function App() {
       // Move to the next incomplete category if needed
       handleContinueToNextCategory();
     }
-
     setIsAutoCompleting(false);
-  }, [allCards, categoryProgress, completedCategories, preferenceScores, swipedCardIds, isAutoCompleting]);
+  }, [allCards, categoryProgress, completedCategories, preferenceScores, swipedCardIds, isAutoCompleting, playSound, handleContinueToNextCategory]);
 
   // Start swiping - preload all cards
   const handleStartSwiping = useCallback(async () => {
@@ -616,30 +669,10 @@ function App() {
     setAppState("swiping");
   }, [initializeProgress]);
 
-  // Handle continuing to next category
-  const handleContinueToNextCategory = useCallback(() => {
-    const nextIncomplete = CATEGORIES.findIndex((c, i) => i > currentCategoryIndex && !completedCategories.has(c.name));
-    if (nextIncomplete !== -1) {
-      setCurrentCategoryIndex(nextIncomplete);
-    } else {
-      const firstIncomplete = CATEGORIES.findIndex(c => !completedCategories.has(c.name));
-      if (firstIncomplete !== -1) {
-        setCurrentCategoryIndex(firstIncomplete);
-      } else {
-        // All categories complete
-        setShowConfetti(true);
-        setTimeout(() => {
-          setShowConfetti(false);
-          setAppState("questionnaire");
-        }, 3000);
-      }
-    }
-    setShowContinueButton(false);
-  }, [currentCategoryIndex, completedCategories]);
-
   const handleSwipe = useCallback((direction: "left" | "right") => {
     // Prevent swiping during animation or if no cards
     if (cardStack.length === 0 || isAnimating) return;
+    playSound(direction === "right" ? "success" : "cancel");
 
     const card = cardStack[0];
     setIsAnimating(true);
@@ -700,11 +733,12 @@ function App() {
       setDragOffset({ x: 0, y: 0 });
       setIsAnimating(false);
     }, 300);
-  }, [cardStack, currentCategory, categoryProgress, completedCategories, preferenceScores, isAnimating]);
+  }, [cardStack, currentCategory, categoryProgress, completedCategories, preferenceScores, isAnimating, playSound]);
 
   // Touch/Mouse handlers
   const handleDragStart = (clientX: number, clientY: number) => {
     setIsDragging(true);
+    playSound("pop");
     dragStartRef.current = { x: clientX, y: clientY };
   };
 
@@ -1715,6 +1749,23 @@ Return ONLY a single JSON object (no array, no wrapper):
   // Get required swipes for current category
   const currentRequiredSwipes = REQUIRED_SWIPES_MAP[currentCategory.name];
   const currentCategoryComplete = categoryProgress[currentCategory.name] >= currentRequiredSwipes;
+  const pageBgClass = isDarkMode
+    ? "from-slate-950 via-slate-900 to-slate-950 text-white"
+    : "from-blue-50 via-white to-fuchsia-50 text-slate-900";
+  const glassHeaderClass = isDarkMode
+    ? "bg-white/5 border-white/10 shadow-[0_20px_60px_-25px_rgba(59,130,246,0.7)]"
+    : "bg-white/80 border-white/60 shadow-[0_20px_60px_-25px_rgba(59,130,246,0.4)]";
+  const glassPanelClass = isDarkMode
+    ? "bg-white/10 border-white/10 text-white"
+    : "bg-white/80 border-white/40 text-slate-900";
+  const subTextClass = isDarkMode ? "text-slate-400" : "text-slate-600";
+  const badgeGradientClass = isDarkMode
+    ? "from-fuchsia-500 via-purple-500 to-sky-500"
+    : "from-fuchsia-500 via-purple-500 to-blue-600";
+  const primaryGradientButton = isDarkMode
+    ? "bg-gradient-to-r from-fuchsia-500 via-purple-500 to-blue-500 text-white shadow-[0_15px_45px_-20px_rgba(59,130,246,0.8)]"
+    : "bg-gradient-to-r from-fuchsia-500 via-purple-500 to-blue-600 text-white shadow-[0_15px_45px_-20px_rgba(79,70,229,0.6)]";
+  const accentBorderClass = isDarkMode ? "border-white/20 text-white/80" : "border-slate-200 text-slate-700";
 
   // Render based on app state
   if (appState === "landing") {
@@ -2884,275 +2935,454 @@ Return ONLY a single JSON object (no array, no wrapper):
 
   // Swiping UI
   return (
-    <div className="min-h-screen bg-gradient-to-b from-amber-50 to-green-50 flex flex-col">
-      {/* Header with progress */}
-      <div className="p-4 bg-white/80 backdrop-blur-sm shadow-sm">
-        <div className="max-w-lg mx-auto">
-          <div className="flex items-center justify-between mb-2">
-            <h1 className="text-lg font-bold text-amber-900">Tratlus</h1>
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-1">
-                <Award className="size-5 text-amber-600" />
-                <span className="font-bold text-amber-700">{tratlusScore}</span>
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleReset}
-                className="text-red-500 hover:text-red-700 hover:bg-red-50 p-2 h-auto"
-                title="Reset all preferences"
-              >
-                <RotateCcw className="size-4" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleAutoComplete}
-                className="text-blue-500 hover:text-blue-700 hover:bg-blue-50 p-2 h-auto"
-                title="Auto-complete minimum swipes"
-                disabled={isAutoCompleting}
-              >
-                {isAutoCompleting ? <Loader2 className="size-4 animate-spin" /> : <SkipForward className="size-4" />}
-              </Button>
-            </div>
+    <div
+      className={cn(
+        "min-h-screen relative flex flex-col overflow-hidden transition-colors duration-500",
+        "bg-gradient-to-br",
+        pageBgClass
+      )}
+    >
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute -top-32 -left-10 w-[60vw] h-[60vw] rounded-full blur-[180px] bg-fuchsia-500/30 animate-pulse" />
+        <div className="absolute top-1/3 -right-24 w-[55vw] h-[55vw] rounded-full blur-[180px] bg-blue-500/25 animate-pulse delay-500" />
+        <div className="absolute bottom-0 left-1/4 w-[45vw] h-[45vw] rounded-full blur-[180px] bg-purple-500/25 animate-pulse delay-1000" />
+        <div
+          className={cn(
+            "absolute inset-0 mix-blend-overlay opacity-50 bg-[size:80px_80px]",
+            isDarkMode
+              ? "bg-[linear-gradient(rgba(255,255,255,0.04)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.04)_1px,transparent_1px)]"
+              : "bg-[linear-gradient(rgba(15,23,42,0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(15,23,42,0.08)_1px,transparent_1px)]"
+          )}
+        />
+        <div
+          className={cn(
+            "absolute top-24 left-4 px-4 py-3 rounded-2xl border flex items-center gap-2 text-sm font-semibold animate-[float_6s_ease-in-out_infinite]",
+            glassPanelClass
+          )}
+        >
+          <Compass className="size-4 text-cyan-300" />
+          AI Compass
+        </div>
+        <div
+          className={cn(
+            "absolute bottom-24 right-6 px-4 py-3 rounded-2xl border flex items-center gap-2 text-sm font-semibold animate-[float_7s_ease-in-out_infinite]",
+            glassPanelClass
+          )}
+        >
+          <Map className="size-4 text-fuchsia-300" />
+          Global Map
+        </div>
+      </div>
+
+      <div className="fixed top-4 right-4 z-30 flex items-center gap-3">
+        <button
+          onClick={handleThemeToggle}
+          className={cn(
+            "w-16 h-9 rounded-full p-1 transition-all duration-500 shadow-lg flex items-center",
+            isDarkMode ? "bg-slate-800/70" : "bg-white/80"
+          )}
+          aria-label="Toggle theme"
+        >
+          <div
+            className={cn(
+              "w-7 h-7 rounded-full bg-white shadow-md flex items-center justify-center transition-transform duration-500",
+              isDarkMode ? "translate-x-7" : "translate-x-0"
+            )}
+          >
+            {isDarkMode ? <Moon className="size-4 text-slate-900" /> : <Sun className="size-4 text-amber-500" />}
           </div>
-          <Progress value={overallProgress} className="h-2 mb-3" />
+        </button>
 
-          {/* Category rings */}
-          <div className="flex justify-between">
-            {CATEGORIES.map((cat, idx) => {
-              const progress = categoryProgress[cat.name];
-              const required = REQUIRED_SWIPES_MAP[cat.name];
-              const isComplete = progress >= required;
-              const percentage = Math.min(100, (progress / required) * 100);
-              const isActive = idx === currentCategoryIndex;
+        <div
+          className={cn(
+            "hidden sm:flex items-center gap-3 rounded-full border px-3 py-2 backdrop-blur-xl transition-all",
+            glassPanelClass
+          )}
+        >
+          <button
+            onClick={handleMuteToggle}
+            className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition-all"
+            aria-label={isMuted ? "Enable sound" : "Mute sound"}
+          >
+            {isMuted ? (
+              <VolumeX className="size-4" />
+            ) : volume < 0.35 ? (
+              <Volume1 className="size-4" />
+            ) : (
+              <Volume2 className="size-4" />
+            )}
+          </button>
+          <input
+            type="range"
+            min="0"
+            max="1"
+            step="0.01"
+            value={volume}
+            onChange={(e) => handleVolumeSlide(parseFloat(e.target.value))}
+            className="w-28 h-1 cursor-pointer accent-current"
+          />
+        </div>
+      </div>
 
-              return (
-                <button
-                  key={cat.name}
-                  onClick={() => {
-                    setCurrentCategoryIndex(idx);
-                    setShowContinueButton(false);
-                  }}
+      <div className="relative z-10 flex flex-col min-h-screen">
+        <header className={cn("p-4 md:p-6", glassHeaderClass)}>
+          <div className="max-w-xl mx-auto space-y-5">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className={cn("uppercase text-[11px] tracking-[0.5em]", subTextClass)}>Swipe deck</p>
+                <h1 className="text-3xl font-black tracking-tight">Tratlus Explorer</h1>
+                <p className={cn("text-sm mt-1", subTextClass)}>
+                  Swipe through curated cards to calibrate your travel palette. Right = love, left = skip.
+                </p>
+              </div>
+              <div className="flex items-center gap-2 flex-wrap justify-end">
+                <div
                   className={cn(
-                    "relative flex flex-col items-center gap-1 p-1 rounded-lg transition-all",
-                    isActive && "bg-amber-100",
-                    isComplete && "text-green-600"
+                    "px-3 py-2 rounded-2xl border text-left min-w-[110px]",
+                    glassPanelClass
                   )}
                 >
-                  <div className="relative">
-                    <svg className="size-10" viewBox="0 0 36 36">
-                      <circle
-                        cx="18" cy="18" r="15.9"
-                        fill="none"
-                        stroke="#e5e7eb"
-                        strokeWidth="2"
-                      />
-                      <circle
-                        cx="18" cy="18" r="15.9"
-                        fill="none"
-                        stroke={isComplete ? "#16a34a" : "#f59e0b"}
-                        strokeWidth="2"
-                        strokeDasharray={`${percentage}, 100`}
-                        strokeLinecap="round"
-                        transform="rotate(-90 18 18)"
-                      />
-                    </svg>
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      {cat.icon}
+                  <span className="text-[10px] uppercase opacity-80">Tratlus score</span>
+                  <div className="text-2xl font-black leading-tight">{tratlusScore}</div>
+                </div>
+                <Button
+                  variant="ghost"
+                  onClick={handleReset}
+                  className={cn(
+                    "rounded-2xl border text-xs font-semibold px-4 py-2",
+                    accentBorderClass,
+                    "hover:-translate-y-0.5 transition-all"
+                  )}
+                >
+                  <RotateCcw className="size-3.5 mr-2" />
+                  Reset
+                </Button>
+                <Button
+                  variant="ghost"
+                  onClick={handleAutoComplete}
+                  disabled={isAutoCompleting}
+                  className={cn(
+                    "rounded-2xl border text-xs font-semibold px-4 py-2",
+                    accentBorderClass,
+                    "hover:-translate-y-0.5 transition-all disabled:opacity-60"
+                  )}
+                >
+                  {isAutoCompleting ? (
+                    <>
+                      <Loader2 className="size-3.5 mr-2 animate-spin" />
+                      Filling
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="size-3.5 mr-2" />
+                      Auto-fill
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
+
+            <div>
+              <div className="flex items-center justify-between text-[11px] uppercase font-semibold">
+                <span className={subTextClass}>Now swiping: {currentCategory.displayName}</span>
+                <span className={subTextClass}>{overallProgress}% calibrated</span>
+              </div>
+              <Progress
+                value={overallProgress}
+                className={cn(
+                  "h-3 mt-2 bg-white/20",
+                  "[&_[data-slot=progress-indicator]]:bg-gradient-to-r",
+                  "[&_[data-slot=progress-indicator]]:from-fuchsia-500",
+                  "[&_[data-slot=progress-indicator]]:to-blue-500"
+                )}
+              />
+            </div>
+
+            <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
+              {CATEGORIES.map((cat, idx) => {
+                const progress = categoryProgress[cat.name];
+                const required = REQUIRED_SWIPES_MAP[cat.name];
+                const isComplete = progress >= required;
+                const percentage = Math.min(100, (progress / required) * 100);
+                const isActive = idx === currentCategoryIndex;
+
+                return (
+                  <button
+                    key={cat.name}
+                    onClick={() => {
+                      setCurrentCategoryIndex(idx);
+                      setShowContinueButton(false);
+                      playSound("click");
+                    }}
+                    className={cn(
+                      "rounded-2xl border px-2 py-2 flex flex-col items-center gap-1 text-[11px] font-semibold transition-all",
+                      glassPanelClass,
+                      isActive && "ring-2 ring-offset-2 ring-offset-transparent ring-fuchsia-500/60",
+                      isComplete && "text-green-300"
+                    )}
+                  >
+                    <div className="relative">
+                      <svg className="size-12" viewBox="0 0 36 36">
+                        <circle
+                          cx="18"
+                          cy="18"
+                          r="15.9"
+                          fill="none"
+                          stroke={isDarkMode ? "rgba(255,255,255,0.2)" : "rgba(15,23,42,0.2)"}
+                          strokeWidth="2"
+                        />
+                        <circle
+                          cx="18"
+                          cy="18"
+                          r="15.9"
+                          fill="none"
+                          stroke={isComplete ? "#22c55e" : "#ec4899"}
+                          strokeWidth="2.5"
+                          strokeDasharray={`${percentage}, 100`}
+                          strokeLinecap="round"
+                          transform="rotate(-90 18 18)"
+                        />
+                      </svg>
+                      <div className="absolute inset-0 flex items-center justify-center">{cat.icon}</div>
+                    </div>
+                    <span>
+                      {Math.min(progress, required)}/{required}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </header>
+
+        <main className="flex-1 flex items-center justify-center px-4 py-8">
+          <div className="relative w-full max-w-md h-[520px]">
+            {cardStack.slice(1, 3).map((card, idx) => (
+              <div
+                key={card.id + "-bg-" + idx}
+                className="absolute inset-x-0 top-0 h-full"
+                style={{
+                  transform: `scale(${1 - (idx + 1) * 0.05}) translateY(${(idx + 1) * 14}px)`,
+                  zIndex: 10 - idx,
+                  opacity: 1 - (idx + 1) * 0.25,
+                }}
+              >
+                <Card
+                  className={cn(
+                    "h-full overflow-hidden border backdrop-blur-xl",
+                    glassPanelClass,
+                    "shadow-2xl"
+                  )}
+                >
+                  <div className="relative h-[60%]">
+                    <img src={card.imageUrl} alt={card.title} className="w-full h-full object-cover opacity-80" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950/60 to-transparent" />
+                  </div>
+                </Card>
+              </div>
+            ))}
+
+            {cardStack[0] && (
+              <div
+                ref={cardRef}
+                className="absolute inset-x-0 top-0 h-full cursor-grab active:cursor-grabbing"
+                style={{
+                  transform: `translateX(${dragOffset.x}px) translateY(${dragOffset.y}px) rotate(${dragOffset.x * 0.05}deg)`,
+                  transition: isDragging ? "none" : "transform 0.3s ease-out",
+                  zIndex: 20,
+                }}
+                onMouseDown={(e) => handleDragStart(e.clientX, e.clientY)}
+                onMouseMove={(e) => handleDragMove(e.clientX, e.clientY)}
+                onMouseUp={handleDragEnd}
+                onMouseLeave={handleDragEnd}
+                onTouchStart={(e) => handleDragStart(e.touches[0].clientX, e.touches[0].clientY)}
+                onTouchMove={(e) => handleDragMove(e.touches[0].clientX, e.touches[0].clientY)}
+                onTouchEnd={handleDragEnd}
+              >
+                <Card
+                  className={cn(
+                    "h-full overflow-hidden border backdrop-blur-2xl transition-all",
+                    glassPanelClass,
+                    "shadow-[0_35px_80px_-40px_rgba(15,23,42,0.8)]",
+                    swipeDirection === "right" && "translate-x-[150%] rotate-12 opacity-0",
+                    swipeDirection === "left" && "-translate-x-[150%] -rotate-12 opacity-0"
+                  )}
+                >
+                  <div className="absolute inset-0 pointer-events-none rounded-[24px] border border-white/20" />
+                  <div
+                    className="absolute inset-0 bg-green-500/20 z-10 flex items-center justify-center transition-opacity"
+                    style={{ opacity: Math.max(0, dragOffset.x / 120) * 0.8 }}
+                  >
+                    <div className="bg-green-500 text-white px-6 py-2 rounded-full text-2xl font-black tracking-widest rotate-6 border border-white/40">
+                      LIKE
                     </div>
                   </div>
-                  <span className="text-[10px] font-medium">{Math.min(progress, required)}/{required}</span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      </div>
-
-      {/* Card stack */}
-      <div className="flex-1 flex items-center justify-center p-4 relative overflow-hidden">
-        <div className="relative w-full max-w-sm h-[500px]">
-          {/* Background cards */}
-          {cardStack.slice(1, 3).map((card, idx) => (
-            <div
-              key={card.id + "-bg-" + idx}
-              className="absolute inset-x-0 top-0 h-full"
-              style={{
-                transform: `scale(${1 - (idx + 1) * 0.05}) translateY(${(idx + 1) * 12}px)`,
-                zIndex: 10 - idx,
-                opacity: 1 - (idx + 1) * 0.2,
-              }}
-            >
-              <Card className="h-full overflow-hidden border-2 shadow-xl">
-                <div className="relative h-[60%]">
-                  <img
-                    src={card.imageUrl}
-                    alt={card.title}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-              </Card>
-            </div>
-          ))}
-
-          {/* Active card */}
-          {cardStack[0] && (
-            <div
-              ref={cardRef}
-              className="absolute inset-x-0 top-0 h-full cursor-grab active:cursor-grabbing"
-              style={{
-                transform: `translateX(${dragOffset.x}px) translateY(${dragOffset.y}px) rotate(${dragOffset.x * 0.05}deg)`,
-                transition: isDragging ? "none" : "transform 0.3s ease-out",
-                zIndex: 20,
-              }}
-              onMouseDown={(e) => handleDragStart(e.clientX, e.clientY)}
-              onMouseMove={(e) => handleDragMove(e.clientX, e.clientY)}
-              onMouseUp={handleDragEnd}
-              onMouseLeave={handleDragEnd}
-              onTouchStart={(e) => handleDragStart(e.touches[0].clientX, e.touches[0].clientY)}
-              onTouchMove={(e) => handleDragMove(e.touches[0].clientX, e.touches[0].clientY)}
-              onTouchEnd={handleDragEnd}
-            >
-              <Card className={cn(
-                "h-full overflow-hidden border-2 shadow-xl transition-all",
-                swipeDirection === "right" && "translate-x-[150%] rotate-12 opacity-0",
-                swipeDirection === "left" && "-translate-x-[150%] -rotate-12 opacity-0"
-              )}>
-                {/* Like/Dislike overlays */}
-                <div
-                  className="absolute inset-0 bg-green-500/30 z-10 flex items-center justify-center transition-opacity"
-                  style={{ opacity: Math.max(0, dragOffset.x / 100) * 0.8 }}
-                >
-                  <div className="bg-green-500 text-white px-6 py-2 rounded-full text-2xl font-bold rotate-12 border-4 border-white">
-                    LIKE
+                  <div
+                    className="absolute inset-0 bg-red-500/20 z-10 flex items-center justify-center transition-opacity"
+                    style={{ opacity: Math.max(0, -dragOffset.x / 120) * 0.8 }}
+                  >
+                    <div className="bg-red-500 text-white px-6 py-2 rounded-full text-2xl font-black tracking-widest -rotate-6 border border-white/40">
+                      SKIP
+                    </div>
                   </div>
-                </div>
-                <div
-                  className="absolute inset-0 bg-red-500/30 z-10 flex items-center justify-center transition-opacity"
-                  style={{ opacity: Math.max(0, -dragOffset.x / 100) * 0.8 }}
-                >
-                  <div className="bg-red-500 text-white px-6 py-2 rounded-full text-2xl font-bold -rotate-12 border-4 border-white">
-                    NOPE
-                  </div>
-                </div>
 
-                <div className="relative h-[60%]">
-                  <img
-                    src={cardStack[0].imageUrl}
-                    alt={cardStack[0].title}
-                    className="w-full h-full object-cover"
-                  />
-                  <div className="absolute top-3 left-3">
-                    <Badge className="bg-amber-600/90">
-                      {currentCategory.icon}
-                      <span className="ml-1">{currentCategory.name}</span>
-                    </Badge>
-                  </div>
-                </div>
-                <CardContent className="p-4">
-                  <h2 className="text-xl font-bold text-amber-900 mb-2">{cardStack[0].title}</h2>
-                  <p className="text-amber-700 mb-4">{cardStack[0].description}</p>
-                  <div className="flex flex-wrap gap-2">
-                    {cardStack[0].tags.map((tag) => (
-                      <Badge key={tag} variant="outline" className="text-amber-700 border-amber-300">
-                        {tag}
+                  <div className="relative h-[60%]">
+                    <img src={cardStack[0].imageUrl} alt={cardStack[0].title} className="w-full h-full object-cover" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 to-transparent" />
+                    <div className="absolute top-4 left-4">
+                      <Badge
+                        className={cn(
+                          "bg-gradient-to-r text-[11px] font-black tracking-widest uppercase border-none text-white",
+                          badgeGradientClass
+                        )}
+                      >
+                        {currentCategory.displayName}
                       </Badge>
-                    ))}
+                    </div>
                   </div>
-                </CardContent>
-              </Card>
+                  <CardContent className="p-5 space-y-3">
+                    <div>
+                      <h2 className="text-2xl font-black tracking-tight">{cardStack[0].title}</h2>
+                      <p className={cn("text-sm mt-2 leading-relaxed", subTextClass)}>{cardStack[0].description}</p>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {cardStack[0].tags.map((tag) => (
+                        <Badge
+                          key={tag}
+                          variant="outline"
+                          className={cn(
+                            "text-[11px] font-semibold uppercase border-white/20 rounded-full px-3 py-1",
+                            isDarkMode ? "text-white/80" : "text-slate-700"
+                          )}
+                        >
+                          {tag}
+                        </Badge>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
+          </div>
+        </main>
+
+        <footer className="p-4">
+          <div
+            className={cn(
+              "max-w-md mx-auto rounded-[28px] border p-5 backdrop-blur-2xl space-y-4",
+              glassPanelClass
+            )}
+          >
+            {cardStack.length > 0 ? (
+              <div className="flex justify-center gap-6">
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className={cn(
+                    "size-16 rounded-full border-2 text-red-400 hover:text-red-500 hover:scale-105 transition-all",
+                    accentBorderClass
+                  )}
+                  onClick={() => handleSwipe("left")}
+                >
+                  <X className="size-7" />
+                </Button>
+                <Button
+                  size="lg"
+                  className={cn(
+                    "size-20 rounded-full flex items-center justify-center text-white text-2xl font-black hover:scale-105 active:scale-95 transition-all",
+                    primaryGradientButton
+                  )}
+                  onClick={() => handleSwipe("right")}
+                >
+                  <Check className="size-8" />
+                </Button>
+              </div>
+            ) : (
+              <p className={cn("text-center text-sm font-semibold", subTextClass)}>
+                You’ve seen every card in this category.
+              </p>
+            )}
+
+            {showContinueButton && !currentCategoryComplete && (
+              <Button
+                onClick={handleContinueToNextCategory}
+                className={cn("w-full rounded-2xl py-4 font-semibold", primaryGradientButton)}
+              >
+                <ChevronRight className="size-4 mr-2" />
+                Jump to Next Category
+              </Button>
+            )}
+
+            {currentCategoryComplete && completedCategories.size < 6 && (
+              <Button
+                onClick={handleContinueToNextCategory}
+                className={cn("w-full rounded-2xl py-4 font-semibold", primaryGradientButton)}
+              >
+                <ChevronRight className="size-4 mr-2" />
+                Continue to Next Category
+              </Button>
+            )}
+
+            {completedCategories.size === 6 && (
+              <Button
+                onClick={() => setAppState("questionnaire")}
+                className={cn("w-full rounded-2xl py-4 font-semibold", primaryGradientButton)}
+              >
+                <ChevronRight className="size-4 mr-2" />
+                Continue to Questionnaire
+              </Button>
+            )}
+
+            <div className="flex flex-wrap gap-2 text-[11px] uppercase font-semibold">
+              {["Precision Picks", "AI Compass", "Jet Lag Friendly", "Budget Guard"].map((pill) => (
+                <span
+                  key={pill}
+                  className={cn(
+                    "px-3 py-1 rounded-full border text-xs tracking-wide",
+                    accentBorderClass
+                  )}
+                >
+                  {pill}
+                </span>
+              ))}
             </div>
-          )}
-        </div>
+          </div>
+        </footer>
       </div>
 
-      {/* Action buttons */}
-      <div className="p-4 bg-white/80 backdrop-blur-sm">
-        <div className="max-w-sm mx-auto space-y-3">
-          {/* Swipe buttons - always show unless no cards */}
-          {cardStack.length > 0 && (
-            <div className="flex justify-center gap-6">
-              <Button
-                size="lg"
-                variant="outline"
-                className="size-16 rounded-full border-2 border-red-400 text-red-500 hover:bg-red-50"
-                onClick={() => handleSwipe("left")}
-              >
-                <X className="size-8" />
-              </Button>
-              <Button
-                size="lg"
-                className="size-16 rounded-full bg-green-500 hover:bg-green-600"
-                onClick={() => handleSwipe("right")}
-              >
-                <Check className="size-8" />
-              </Button>
-            </div>
-          )}
-
-          {/* No more cards message */}
-          {cardStack.length === 0 && (
-            <p className="text-center text-amber-700 text-sm">
-              No more cards in this category!
-            </p>
-          )}
-
-          {/* Continue to next category button - always visible when current category is complete */}
-          {currentCategoryComplete && completedCategories.size < 6 && (
-            <Button
-              onClick={handleContinueToNextCategory}
-              className="w-full bg-cyan-600 hover:bg-cyan-700"
-            >
-              <ChevronRight className="size-4 mr-2" />
-              Continue to Next Category
-            </Button>
-          )}
-
-          {/* Continue to questionnaire button - visible when all categories complete */}
-          {completedCategories.size === 6 && (
-            <Button
-              onClick={() => setAppState("questionnaire")}
-              className="w-full bg-cyan-600 hover:bg-cyan-700"
-            >
-              <ChevronRight className="size-4 mr-2" />
-              Continue to Questionnaire
-            </Button>
-          )}
-        </div>
-      </div>
-
-      {/* Badge notification */}
       {showBadge && (
-        <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 animate-bounce">
-          <Card className="bg-gradient-to-r from-amber-400 to-amber-600 text-white p-6 text-center shadow-2xl">
-            <Award className="size-16 mx-auto mb-2" />
-            <h3 className="text-xl font-bold">{showBadge} Complete!</h3>
-            <p className="text-amber-100">Badge Earned</p>
+        <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 animate-in fade-in duration-500">
+          <Card
+            className={cn(
+              "text-center p-8 rounded-3xl text-white shadow-2xl border-0 bg-gradient-to-r",
+              badgeGradientClass
+            )}
+          >
+            <Award className="size-16 mx-auto mb-3" />
+            <h3 className="text-2xl font-black">{showBadge} Complete!</h3>
+            <p className="text-sm opacity-90">Badge earned</p>
           </Card>
         </div>
       )}
 
-      {/* Confetti */}
       {showConfetti && (
-        <div className="fixed inset-0 z-50 pointer-events-none">
+        <div className="fixed inset-0 z-40 pointer-events-none">
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className="text-center animate-pulse">
-              <PartyPopper className="size-24 text-amber-500 mx-auto mb-4" />
-              <h2 className="text-3xl font-bold text-amber-900">100% Complete!</h2>
-              <p className="text-amber-700">Swipe Profile Calibrated</p>
+            <div className="text-center space-y-2 animate-pulse">
+              <PartyPopper className="size-24 mx-auto text-fuchsia-400" />
+              <h2 className="text-3xl font-black">Profile Calibrated!</h2>
+              <p className={cn("text-sm", subTextClass)}>Jump into the questionnaire to lock it in.</p>
             </div>
           </div>
-          {/* Simple confetti particles */}
           {Array.from({ length: 50 }).map((_, i) => (
             <div
               key={i}
-              className="absolute w-3 h-3 rounded-full animate-ping"
+              className="absolute w-2 h-2 rounded-full animate-ping"
               style={{
-                backgroundColor: ["#f59e0b", "#10b981", "#3b82f6", "#ec4899", "#8b5cf6"][i % 5],
+                backgroundColor: ["#f472b6", "#38bdf8", "#a855f7", "#34d399", "#facc15"][i % 5],
                 left: `${Math.random() * 100}%`,
                 top: `${Math.random() * 100}%`,
-                animationDelay: `${Math.random() * 2}s`,
+                animationDelay: `${Math.random()}s`,
                 animationDuration: `${1 + Math.random()}s`,
               }}
             />
@@ -3161,4 +3391,4 @@ Return ONLY a single JSON object (no array, no wrapper):
       )}
     </div>
   );
-}
+} 
