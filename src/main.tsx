@@ -1,5 +1,6 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createRouter, RouterProvider } from "@tanstack/react-router";
+import { inject } from "@vercel/analytics";
 import { StrictMode } from "react";
 import ReactDOM from "react-dom/client";
 
@@ -11,6 +12,9 @@ import "./styles.css";
 // Initialize Tratlus platform SDK
 import { APP_CONFIG } from "./sdk/core/global.ts";
 export { APP_CONFIG }; // for backward compatibility
+
+// Initialize Vercel Web Analytics
+inject();
 
 // Create a QueryClient instance
 const queryClient = new QueryClient({
@@ -54,5 +58,3 @@ if (rootElement && !rootElement.innerHTML) {
 		</StrictMode>,
 	);
 }
-
-
