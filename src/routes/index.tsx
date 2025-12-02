@@ -1754,12 +1754,12 @@ Return ONLY a single JSON object (no array, no wrapper):
   const pageBgClass = isDarkMode
     ? "from-slate-950 via-slate-900 to-slate-950 text-white"
     : "from-blue-50 via-white to-fuchsia-50 text-slate-900";
-  const glassHeaderClass = isDarkMode
-    ? "bg-white/5 border-white/10 shadow-[0_20px_60px_-25px_rgba(59,130,246,0.7)]"
-    : "bg-white/80 border-white/60 shadow-[0_20px_60px_-25px_rgba(59,130,246,0.4)]";
-  const glassPanelClass = isDarkMode
-    ? "bg-white/10 border-white/10 text-white"
-    : "bg-white/80 border-white/40 text-slate-900";
+    const glassHeaderClass = isDarkMode
+      ? "bg-white/5 border-white/10 shadow-[0_20px_60px_-25px_rgba(59,130,246,0.7)]"
+      : "bg-white/20 border-white/50 shadow-[0_20px_60px_-25px_rgba(59,130,246,0.4)]";
+    const glassPanelClass = isDarkMode
+      ? "bg-white/10 border-white/10 text-white"
+      : "bg-white/15 border-white/30 text-slate-900";
   const subTextClass = isDarkMode ? "text-slate-400" : "text-slate-600";
   const badgeGradientClass = isDarkMode
     ? "from-fuchsia-500 via-purple-500 to-sky-500"
@@ -1767,7 +1767,7 @@ Return ONLY a single JSON object (no array, no wrapper):
   const primaryGradientButton = isDarkMode
     ? "bg-gradient-to-r from-fuchsia-500 via-purple-500 to-blue-500 text-white shadow-[0_15px_45px_-20px_rgba(59,130,246,0.8)]"
     : "bg-gradient-to-r from-fuchsia-500 via-purple-500 to-blue-600 text-white shadow-[0_15px_45px_-20px_rgba(79,70,229,0.6)]";
-  const accentBorderClass = isDarkMode ? "border-white/20 text-white/80" : "border-slate-200 text-slate-700";
+    const accentBorderClass = isDarkMode ? "border-white/20 text-white/80 bg-white/5" : "border-white/30 text-slate-700 bg-white/10";
 
   // Render based on app state
   if (appState === "landing") {
@@ -3269,10 +3269,10 @@ Return ONLY a single JSON object (no array, no wrapper):
               <div className="flex justify-center gap-6">
                 <Button
                   size="lg"
-                  variant="outline"
+                  variant="ghost"
                   className={cn(
                     "size-16 rounded-full border-2 text-red-400 hover:text-red-500 hover:scale-105 transition-all",
-                    accentBorderClass
+                    isDarkMode ? "border-white/20 bg-white/5" : "border-white/30 bg-white/10"
                   )}
                   onClick={() => handleSwipe("left")}
                 >
