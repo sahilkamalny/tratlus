@@ -62,6 +62,7 @@ import {
   Volume2,
   VolumeX,
   Volume1,
+  Menu,
 } from "lucide-react";
 import { LandingPage } from "@/components/landing/LandingPage";
 import { useTheme } from "@/contexts/ThemeContext";
@@ -386,6 +387,7 @@ function App() {
   const [showContinueButton, setShowContinueButton] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
   const [isAutoCompleting, setIsAutoCompleting] = useState(false);
+  const [showSettingsMenu, setShowSettingsMenu] = useState(false);
   const handleThemeToggle = useCallback(() => {
     playSound("switch");
     toggleTheme();
@@ -2956,56 +2958,6 @@ Return ONLY a single JSON object (no array, no wrapper):
         />
       </div>
 
-      <div className="fixed top-4 right-4 z-30 flex items-center gap-3">
-        <button
-          onClick={handleThemeToggle}
-          className={cn(
-            "w-16 h-9 rounded-full p-1 transition-all duration-500 shadow-lg flex items-center",
-            isDarkMode ? "bg-slate-800/70" : "bg-white/80"
-          )}
-          aria-label="Toggle theme"
-        >
-          <div
-            className={cn(
-              "w-7 h-7 rounded-full bg-white shadow-md flex items-center justify-center transition-transform duration-500",
-              isDarkMode ? "translate-x-7" : "translate-x-0"
-            )}
-          >
-            {isDarkMode ? <Moon className="size-4 text-slate-900" /> : <Sun className="size-4 text-amber-500" />}
-          </div>
-        </button>
-
-        <div
-          className={cn(
-            "hidden sm:flex items-center gap-3 rounded-full border px-3 py-2 backdrop-blur-xl transition-all",
-            glassPanelClass
-          )}
-        >
-          <button
-            onClick={handleMuteToggle}
-            className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition-all"
-            aria-label={isMuted ? "Enable sound" : "Mute sound"}
-          >
-            {isMuted ? (
-              <VolumeX className="size-4" />
-            ) : volume < 0.35 ? (
-              <Volume1 className="size-4" />
-            ) : (
-              <Volume2 className="size-4" />
-            )}
-          </button>
-          <input
-            type="range"
-            min="0"
-            max="1"
-            step="0.01"
-            value={volume}
-            onChange={(e) => handleVolumeSlide(parseFloat(e.target.value))}
-            className="w-28 h-1 cursor-pointer accent-current"
-          />
-        </div>
-      </div>
-
       <div className="relative z-10 flex flex-col min-h-screen">
         <header className={cn("px-4 pt-4 pb-2 md:px-6 md:pt-6 md:pb-3", glassHeaderClass)}>
           <div className="max-w-xl mx-auto space-y-3">
@@ -3021,18 +2973,18 @@ Return ONLY a single JSON object (no array, no wrapper):
               >
                 Swipe Deck
               </h1>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 relative">
                 <Button
                   variant="ghost"
                   onClick={handleReset}
                   className={cn(
-                    "rounded-2xl border text-[11px] font-semibold px-3 py-1.5",
+                    "rounded-2xl border text-[11px] font-semibold px-2 py-1.5",
                     accentBorderClass,
                     "hover:-translate-y-0.5 transition-all"
                   )}
+                  aria-label="Reset"
                 >
-                  <RotateCcw className="size-3 mr-1" />
-                  Reset
+                  <RotateCcw className="size-3" />
                 </Button>
                 <Button
                   variant="ghost"
@@ -3050,6 +3002,68 @@ Return ONLY a single JSON object (no array, no wrapper):
                     <Sparkles className="size-3" />
                   )}
                 </Button>
+                <Button
+                  variant="ghost"
+                  onClick={() => setShowSettingsMenu((prev) => !prev)}
+                  className={cn(
+                    "rounded-2xl border text-[11px] font-semibold px-2 py-1.5",
+                    accentBorderClass,
+                    "hover:-translate-y-0.5 transition-all"
+                  )}
+                  aria-label="Open settings menu"
+                >
+                  <Menu className="size-4" />
+                </Button>
+                {showSettingsMenu && (
+                  <div 
+                    className={cn(
+                      "absolute right-0 top-[calc(100%+0.5rem)] flex flex-col gap-2 rounded-2xl backdrop-blur-xl z-30 overflow-hidden",
+                      isDarkMode 
+                        ? "bg-slate-900/20 border border-white/10" 
+                        : "bg-white/20 border border-slate-200/40"
+                    )}
+                    style={{ width: '40px' }}
+                  >
+                    <Button
+                      variant="ghost"
+                      onClick={() => {
+                        handleMuteToggle();
+                        setShowSettingsMenu(false);
+                      }}
+                      className={cn(
+                        "rounded-none border-0 text-[11px] font-semibold px-2 py-1.5 hover:bg-white/10",
+                        "hover:-translate-y-0 transition-all"
+                      )}
+                      aria-label="Toggle sound"
+                    >
+                      {isMuted ? (
+                        <VolumeX className="size-3" />
+                      ) : volume < 0.35 ? (
+                        <Volume1 className="size-3" />
+                      ) : (
+                        <Volume2 className="size-3" />
+                      )}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      onClick={() => {
+                        handleThemeToggle();
+                        setShowSettingsMenu(false);
+                      }}
+                      className={cn(
+                        "rounded-none border-0 text-[11px] font-semibold px-2 py-1.5 hover:bg-white/10",
+                        "hover:-translate-y-0 transition-all"
+                      )}
+                      aria-label="Toggle theme"
+                    >
+                      {isDarkMode ? (
+                        <Moon className="size-3" />
+                      ) : (
+                        <Sun className="size-3" />
+                      )}
+                    </Button>
+                  </div>
+                )}
               </div>
             </div>
 
