@@ -1755,8 +1755,8 @@ Return ONLY a single JSON object (no array, no wrapper):
     ? "from-slate-950 via-slate-900 to-slate-950 text-white"
     : "from-blue-100 via-blue-50 to-blue-100 text-slate-900";
     const glassHeaderClass = isDarkMode
-      ? "bg-white/5 border-white/10 shadow-[0_20px_60px_-25px_rgba(59,130,246,0.7)]"
-      : "bg-blue-50/70 border-blue-200/60 shadow-[0_20px_60px_-25px_rgba(37,99,235,0.7)]";
+      ? "bg-white/5 border-white/10 shadow-[0_20px_60px_-25px_rgba(59,130,246,0.7)] backdrop-blur-md"
+      : "bg-white/30 border-white/30 shadow-[0_20px_60px_-25px_rgba(37,99,235,0.7)] backdrop-blur-md";
     const glassPanelClass = isDarkMode
       ? "bg-white/10 border-white/10 text-white"
       : "bg-white/15 border-white/30 text-slate-900";
