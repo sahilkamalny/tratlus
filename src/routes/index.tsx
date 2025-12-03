@@ -1753,7 +1753,7 @@ Return ONLY a single JSON object (no array, no wrapper):
   const currentCategoryComplete = categoryProgress[currentCategory.name] >= currentRequiredSwipes;
   const pageBgClass = isDarkMode
     ? "from-slate-950 via-slate-900 to-slate-950 text-white"
-    : "from-blue-100 via-blue-50 to-blue-100 text-slate-900";
+    : "from-white via-white to-white text-slate-900";
     const glassHeaderClass = isDarkMode
       ? "bg-white/5 border-white/10 shadow-[0_20px_60px_-25px_rgba(59,130,246,0.7)] backdrop-blur-md"
       : "bg-white/30 border-white/30 shadow-[0_20px_60px_-25px_rgba(37,99,235,0.7)] backdrop-blur-md";
@@ -3002,7 +3002,7 @@ Return ONLY a single JSON object (no array, no wrapper):
                     accentBorderClass,
                     isDarkMode 
                       ? "hover:-translate-y-0.5 hover:bg-white/10 transition-all" 
-                      : "hover:-translate-y-0.5 hover:bg-white/20 transition-all"
+                      : "hover:-translate-y-0.5 hover:bg-slate-900/10 transition-all"
                   )}
                   aria-label="Reset"
                 >
@@ -3017,7 +3017,7 @@ Return ONLY a single JSON object (no array, no wrapper):
                     accentBorderClass,
                     isDarkMode 
                       ? "hover:-translate-y-0.5 hover:bg-white/10 transition-all disabled:opacity-60" 
-                      : "hover:-translate-y-0.5 hover:bg-white/20 transition-all disabled:opacity-60"
+                      : "hover:-translate-y-0.5 hover:bg-slate-900/10 transition-all disabled:opacity-60"
                   )}
                 >
                   {isAutoCompleting ? (
@@ -3034,7 +3034,7 @@ Return ONLY a single JSON object (no array, no wrapper):
                     accentBorderClass,
                     isDarkMode 
                       ? "hover:-translate-y-0.5 hover:bg-white/10 transition-all" 
-                      : "hover:-translate-y-0.5 hover:bg-white/20 transition-all"
+                      : "hover:-translate-y-0.5 hover:bg-slate-900/10 transition-all"
                   )}
                   aria-label="Open settings menu"
                 >
@@ -3057,7 +3057,8 @@ Return ONLY a single JSON object (no array, no wrapper):
                         setShowSettingsMenu(false);
                       }}
                       className={cn(
-                        "rounded-none border-0 text-[11px] font-semibold px-2 py-1.5 hover:bg-white/10",
+                        "rounded-none border-0 text-[11px] font-semibold px-2 py-1.5",
+                        isDarkMode ? "hover:bg-white/10" : "hover:bg-slate-900/10",
                         "hover:-translate-y-0 transition-all"
                       )}
                       aria-label="Toggle theme"
@@ -3075,7 +3076,8 @@ Return ONLY a single JSON object (no array, no wrapper):
                         setShowSettingsMenu(false);
                       }}
                       className={cn(
-                        "rounded-none border-0 text-[11px] font-semibold px-2 py-1.5 hover:bg-white/10",
+                        "rounded-none border-0 text-[11px] font-semibold px-2 py-1.5",
+                        isDarkMode ? "hover:bg-white/10" : "hover:bg-slate-900/10",
                         "hover:-translate-y-0 transition-all"
                       )}
                       aria-label="Toggle sound"
@@ -3291,8 +3293,8 @@ Return ONLY a single JSON object (no array, no wrapper):
                   className={cn(
                     "size-16 rounded-full border-2 text-red-400 hover:text-red-500 transition-all",
                     isDarkMode 
-                      ? "border-white/20 bg-white/5 hover:scale-105 hover:bg-white/10" 
-                      : "border-white/30 bg-white/10 hover:scale-105 hover:bg-white/20"
+                      ? "border-slate-400/40 bg-white/5 hover:scale-105 hover:bg-slate-400 hover:border-slate-400 dark:hover:bg-slate-400" 
+                      : "border-white/30 bg-white/10 hover:scale-105 hover:bg-white hover:border-white"
                   )}
                   onClick={() => handleSwipe("left")}
                 >
