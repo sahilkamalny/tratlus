@@ -1753,10 +1753,10 @@ Return ONLY a single JSON object (no array, no wrapper):
   const currentCategoryComplete = categoryProgress[currentCategory.name] >= currentRequiredSwipes;
   const pageBgClass = isDarkMode
     ? "from-slate-950 via-slate-900 to-slate-950 text-white"
-    : "from-blue-50 via-white to-fuchsia-50 text-slate-900";
+    : "from-blue-100 via-blue-50 to-blue-100 text-slate-900";
     const glassHeaderClass = isDarkMode
       ? "bg-white/5 border-white/10 shadow-[0_20px_60px_-25px_rgba(59,130,246,0.7)]"
-      : "bg-white/20 border-white/50 shadow-[0_20px_60px_-25px_rgba(59,130,246,0.4)]";
+      : "bg-blue-50/70 border-blue-200/60 shadow-[0_20px_60px_-25px_rgba(37,99,235,0.7)]";
     const glassPanelClass = isDarkMode
       ? "bg-white/10 border-white/10 text-white"
       : "bg-white/15 border-white/30 text-slate-900";
@@ -2946,13 +2946,28 @@ Return ONLY a single JSON object (no array, no wrapper):
     >
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         {/* Fuchsia blob - top left */}
-        <div className="absolute top-0 left-0 w-[200vw] h-[200vw] sm:w-[80vw] sm:h-[80vw] sm:-top-40 sm:-left-16 rounded-full blur-[100px] sm:blur-[200px] bg-fuchsia-500/60 sm:bg-fuchsia-500/35 animate-pulse" style={{ transform: 'translate(-40%, -40%)' }} />
+        <div className={cn(
+          "absolute top-0 left-0 w-[200vw] h-[200vw] sm:w-[80vw] sm:h-[80vw] sm:-top-40 sm:-left-16 rounded-full blur-[100px] sm:blur-[200px] animate-pulse",
+          isDarkMode 
+            ? "bg-fuchsia-500/60 sm:bg-fuchsia-500/35" 
+            : "bg-fuchsia-600/70 sm:bg-fuchsia-600/60"
+        )} style={{ transform: 'translate(-40%, -40%)' }} />
         
         {/* Blue blob - middle right */}
-        <div className="absolute top-1/3 right-0 w-[180vw] h-[180vw] sm:w-[70vw] sm:h-[70vw] sm:-right-28 rounded-full blur-[100px] sm:blur-[200px] bg-blue-500/55 sm:bg-blue-500/30 animate-pulse" style={{ transform: 'translate(40%, 0)', animationDelay: '0.5s' }} />
+        <div className={cn(
+          "absolute top-1/3 right-0 w-[180vw] h-[180vw] sm:w-[70vw] sm:h-[70vw] sm:-right-28 rounded-full blur-[100px] sm:blur-[200px] animate-pulse",
+          isDarkMode 
+            ? "bg-blue-500/55 sm:bg-blue-500/30" 
+            : "bg-purple-600/65 sm:bg-purple-600/55"
+        )} style={{ transform: 'translate(40%, 0)', animationDelay: '0.5s' }} />
         
         {/* Purple blob - bottom left */}
-        <div className="absolute bottom-0 left-1/4 w-[180vw] h-[180vw] sm:w-[70vw] sm:h-[70vw] sm:bottom-[-10%] rounded-full blur-[100px] sm:blur-[200px] bg-purple-500/55 sm:bg-purple-500/30 animate-pulse" style={{ transform: 'translate(-25%, 30%)', animationDelay: '1s' }} />
+        <div className={cn(
+          "absolute bottom-0 left-1/4 w-[180vw] h-[180vw] sm:w-[70vw] sm:h-[70vw] sm:bottom-[-10%] rounded-full blur-[100px] sm:blur-[200px] animate-pulse",
+          isDarkMode 
+            ? "bg-purple-500/55 sm:bg-purple-500/30" 
+            : "bg-violet-600/65 sm:bg-violet-600/55"
+        )} style={{ transform: 'translate(-25%, 30%)', animationDelay: '1s' }} />
         <div
           className={cn(
             "absolute inset-0 mix-blend-overlay opacity-50 bg-[size:80px_80px]",
@@ -2985,7 +3000,9 @@ Return ONLY a single JSON object (no array, no wrapper):
                   className={cn(
                     "rounded-2xl border text-[11px] font-semibold px-2 py-1.5",
                     accentBorderClass,
-                    "hover:-translate-y-0.5 transition-all"
+                    isDarkMode 
+                      ? "hover:-translate-y-0.5 hover:bg-white/10 transition-all" 
+                      : "hover:-translate-y-0.5 hover:bg-white/20 transition-all"
                   )}
                   aria-label="Reset"
                 >
@@ -2998,7 +3015,9 @@ Return ONLY a single JSON object (no array, no wrapper):
                   className={cn(
                     "rounded-2xl border text-[11px] font-semibold px-3 py-1.5",
                     accentBorderClass,
-                    "hover:-translate-y-0.5 transition-all disabled:opacity-60"
+                    isDarkMode 
+                      ? "hover:-translate-y-0.5 hover:bg-white/10 transition-all disabled:opacity-60" 
+                      : "hover:-translate-y-0.5 hover:bg-white/20 transition-all disabled:opacity-60"
                   )}
                 >
                   {isAutoCompleting ? (
@@ -3013,7 +3032,9 @@ Return ONLY a single JSON object (no array, no wrapper):
                   className={cn(
                     "rounded-2xl border text-[11px] font-semibold px-2 py-1.5",
                     accentBorderClass,
-                    "hover:-translate-y-0.5 transition-all"
+                    isDarkMode 
+                      ? "hover:-translate-y-0.5 hover:bg-white/10 transition-all" 
+                      : "hover:-translate-y-0.5 hover:bg-white/20 transition-all"
                   )}
                   aria-label="Open settings menu"
                 >
@@ -3022,13 +3043,31 @@ Return ONLY a single JSON object (no array, no wrapper):
                 {showSettingsMenu && (
                   <div 
                     className={cn(
-                      "absolute right-0 top-[calc(100%+0.5rem)] flex flex-col gap-2 rounded-2xl backdrop-blur-xl z-30 overflow-hidden",
+                      "absolute right-0 top-[calc(100%+0.5rem)] flex flex-col rounded-2xl backdrop-blur-xl z-30 overflow-hidden",
                       isDarkMode 
                         ? "bg-slate-900/20 border border-white/10" 
                         : "bg-white/20 border border-slate-200/40"
                     )}
                     style={{ width: '40px' }}
                   >
+                    <Button
+                      variant="ghost"
+                      onClick={() => {
+                        handleThemeToggle();
+                        setShowSettingsMenu(false);
+                      }}
+                      className={cn(
+                        "rounded-none border-0 text-[11px] font-semibold px-2 py-1.5 hover:bg-white/10",
+                        "hover:-translate-y-0 transition-all"
+                      )}
+                      aria-label="Toggle theme"
+                    >
+                      {isDarkMode ? (
+                        <Moon className="size-3" />
+                      ) : (
+                        <Sun className="size-3" />
+                      )}
+                    </Button>
                     <Button
                       variant="ghost"
                       onClick={() => {
@@ -3047,24 +3086,6 @@ Return ONLY a single JSON object (no array, no wrapper):
                         <Volume1 className="size-3" />
                       ) : (
                         <Volume2 className="size-3" />
-                      )}
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      onClick={() => {
-                        handleThemeToggle();
-                        setShowSettingsMenu(false);
-                      }}
-                      className={cn(
-                        "rounded-none border-0 text-[11px] font-semibold px-2 py-1.5 hover:bg-white/10",
-                        "hover:-translate-y-0 transition-all"
-                      )}
-                      aria-label="Toggle theme"
-                    >
-                      {isDarkMode ? (
-                        <Moon className="size-3" />
-                      ) : (
-                        <Sun className="size-3" />
                       )}
                     </Button>
                   </div>
@@ -3137,9 +3158,6 @@ Return ONLY a single JSON object (no array, no wrapper):
                       </svg>
                       <div className="absolute inset-0 flex items-center justify-center">{cat.icon}</div>
                     </div>
-                    <span>
-                      {Math.min(progress, required)}/{required}
-                    </span>
                   </button>
                 );
               })}
@@ -3271,8 +3289,10 @@ Return ONLY a single JSON object (no array, no wrapper):
                   size="lg"
                   variant="ghost"
                   className={cn(
-                    "size-16 rounded-full border-2 text-red-400 hover:text-red-500 hover:scale-105 transition-all",
-                    isDarkMode ? "border-white/20 bg-white/5" : "border-white/30 bg-white/10"
+                    "size-16 rounded-full border-2 text-red-400 hover:text-red-500 transition-all",
+                    isDarkMode 
+                      ? "border-white/20 bg-white/5 hover:scale-105 hover:bg-white/10" 
+                      : "border-white/30 bg-white/10 hover:scale-105 hover:bg-white/20"
                   )}
                   onClick={() => handleSwipe("left")}
                 >
