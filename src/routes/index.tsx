@@ -2939,13 +2939,13 @@ Return ONLY a single JSON object (no array, no wrapper):
   return (
     <div
       className={cn(
-        "h-screen relative flex flex-col overflow-y-auto transition-colors duration-500",
+        "h-screen relative flex flex-col overflow-hidden transition-colors duration-500",
         "bg-gradient-to-br",
         pageBgClass
       )}
-      style={{ overscrollBehavior: 'none', WebkitOverflowScrolling: 'touch', minHeight: '100%' }}
+      style={{ touchAction: 'none' }}
     >
-      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0" style={{ minHeight: '100vh' }}>
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
         {/* Fuchsia blob - top left */}
         <div className={cn(
           "absolute top-0 left-0 w-[200vw] h-[200vw] sm:w-[80vw] sm:h-[80vw] sm:-top-40 sm:-left-16 rounded-full blur-[100px] sm:blur-[200px]",
@@ -2979,7 +2979,7 @@ Return ONLY a single JSON object (no array, no wrapper):
         />
       </div>
 
-      <div className="relative z-10 flex flex-col min-h-full">
+      <div className="relative z-10 flex flex-col min-h-screen">
         <header className={cn("px-4 pt-4 pb-2 md:px-6 md:pt-6 md:pb-3", glassHeaderClass)}>
           <div className="max-w-xl mx-auto space-y-3">
             <div className="flex items-center justify-between gap-3">

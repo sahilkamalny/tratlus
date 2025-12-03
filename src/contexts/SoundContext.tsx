@@ -137,20 +137,26 @@ export const SoundProvider = ({ children }: { children: React.ReactNode }) => {
   }, [isMuted, volume, audioCtxRef.current]);
 
   useEffect(() => {
-    // Add a global click listener to initialize audio
-    const handleFirstInteraction = () => {
-        initAudio();
-        window.removeEventListener('click', handleFirstInteraction);
-        window.removeEventListener('keydown', handleFirstInteraction);
-    };
-
-    window.addEventListener('click', handleFirstInteraction);
-    window.addEventListener('keydown', handleFirstInteraction);
-
-    return () => {
-        window.removeEventListener('click', handleFirstInteraction);
-        window.removeEventListener('keydown', handleFirstInteraction);
-    };
+    // Initialize audio context immediately on mount
+    const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
+    if (AudioContext) {
+      audioCtxRef.current = new AudioContext();
+      // Try to resume immediately (may require user interaction on some browsers)
+      if (audioCtxRef.current.state === 'suspended') {
+        audioCtxRef.current.resume().catch(() => {
+          // If resume fails, fall back to interaction-based initialization
+          const handleFirstInteraction = () => {
+            initAudio();
+            window.removeEventListener('click', handleFirstInteraction);
+            window.removeEventListener('keydown', handleFirstInteraction);
+            window.removeEventListener('touchstart', handleFirstInteraction);
+          };
+          window.addEventListener('click', handleFirstInteraction);
+          window.addEventListener('keydown', handleFirstInteraction);
+          window.addEventListener('touchstart', handleFirstInteraction);
+        });
+      }
+    }
   }, []);
 
   return (
