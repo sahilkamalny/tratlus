@@ -21,11 +21,6 @@ const configs = [
     testFile: 'src/routes/index.tsx'
   },
   {
-    name: 'MCP Configuration',
-    config: 'config/eslint/eslint.mcp.config.js',
-    testFile: 'src/hooks/use-mcp-client.ts'
-  },
-  {
     name: 'Radix Configuration', 
     config: 'config/eslint/eslint.radix.config.js',
     testFile: 'src/components/ui/select.tsx'

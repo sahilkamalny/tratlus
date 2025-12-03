@@ -8,10 +8,6 @@ import { routeTree } from "./routeTree.gen";
 
 import "./styles.css";
 
-// Initialize Tratlus platform SDK
-import { APP_CONFIG } from "./sdk/core/global.ts";
-export { APP_CONFIG }; // for backward compatibility
-
 // Create a QueryClient instance
 const queryClient = new QueryClient({
 	defaultOptions: {
