@@ -390,6 +390,8 @@ function App() {
   const [isAnimating, setIsAnimating] = useState(false);
   const [isAutoCompleting, setIsAutoCompleting] = useState(false);
   const [showSettingsMenu, setShowSettingsMenu] = useState(false);
+  const [currentRightPhrase, setCurrentRightPhrase] = useState<string>("");
+  const [currentLeftPhrase, setCurrentLeftPhrase] = useState<string>("");
   // Random phrases for swipe feedback
   const getSwipeRightPhrase = useCallback((category: CategoryName) => {
     const phrases: Record<CategoryName, string[]> = {
@@ -698,6 +700,14 @@ function App() {
     setAppState("swiping");
   }, [initializeProgress]);
 
+  // Initialize phrases when a new card appears
+  useEffect(() => {
+    if (cardStack.length > 0 && !isAnimating && currentCategory) {
+      setCurrentRightPhrase(getSwipeRightPhrase(currentCategory.name));
+      setCurrentLeftPhrase(getSwipeLeftPhrase(currentCategory.name));
+    }
+  }, [cardStack.length, currentCategory?.name, isAnimating, getSwipeRightPhrase, getSwipeLeftPhrase]);
+
   const handleSwipe = useCallback((direction: "left" | "right") => {
     // Prevent swiping during animation or if no cards
     if (cardStack.length === 0 || isAnimating) return;
@@ -706,6 +716,10 @@ function App() {
     const card = cardStack[0];
     setIsAnimating(true);
     setSwipeDirection(direction);
+    
+    // Set phrases for this swipe
+    setCurrentRightPhrase(getSwipeRightPhrase(currentCategory.name));
+    setCurrentLeftPhrase(getSwipeLeftPhrase(currentCategory.name));
 
     // Animate out
     setTimeout(() => {
@@ -761,7 +775,14 @@ function App() {
       setSwipeDirection(null);
       setDragOffset({ x: 0, y: 0 });
       setIsAnimating(false);
-    }, 300);
+      // Generate new phrases for next card
+      if (newStack.length > 0) {
+        setTimeout(() => {
+          setCurrentRightPhrase(getSwipeRightPhrase(currentCategory.name));
+          setCurrentLeftPhrase(getSwipeLeftPhrase(currentCategory.name));
+        }, 100);
+      }
+    }, 600);
   }, [cardStack, currentCategory, categoryProgress, completedCategories, preferenceScores, isAnimating, playSound]);
 
   // Touch/Mouse handlers
@@ -2975,27 +2996,50 @@ Return ONLY a single JSON object (no array, no wrapper):
       <div className="absolute inset-0 pointer-events-none overflow-hidden z-0" style={{ zIndex: 0 }}>
         {/* Fuchsia blob - top left */}
         <div className={cn(
-          "absolute -top-[20%] -left-[10%] w-[80vw] h-[80vw] sm:w-[80vw] sm:h-[80vw] sm:-top-40 sm:-left-16 rounded-full blur-[150px] sm:blur-[200px]",
+          "absolute top-0 left-0 w-[100vw] h-[100vh] rounded-full blur-[150px] sm:blur-[200px]",
           isDarkMode 
             ? "bg-fuchsia-500/45 sm:bg-fuchsia-500/26" 
             : "bg-fuchsia-600/52 sm:bg-fuchsia-600/45"
-        )} style={{ animation: 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite' }} />
+        )} style={{ 
+          animation: 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+          transform: 'translate(-20%, -20%)',
+          width: '80vw',
+          height: '80vw',
+          maxWidth: '800px',
+          maxHeight: '800px'
+        }} />
         
-        {/* White blob - middle right */}
+        {/* Blue/blob - middle right */}
         <div className={cn(
-          "absolute top-[30%] -right-[20%] w-[70vw] h-[70vw] sm:w-[70vw] sm:h-[70vw] sm:-right-28 rounded-full blur-[150px] sm:blur-[200px]",
+          "absolute top-0 right-0 w-[100vw] h-[100vh] rounded-full blur-[150px] sm:blur-[200px]",
           isDarkMode 
             ? "bg-blue-500/41 sm:bg-blue-500/22" 
-            : "bg-white/80 sm:bg-white/70"
-        )} style={{ animation: 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite', animationDelay: '0.5s' }} />
+            : "bg-fuchsia-600/52 sm:bg-fuchsia-600/45"
+        )} style={{ 
+          animation: 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite', 
+          animationDelay: '0.5s',
+          transform: 'translate(20%, 30%)',
+          width: '70vw',
+          height: '70vw',
+          maxWidth: '700px',
+          maxHeight: '700px'
+        }} />
         
         {/* Purple blob - bottom left */}
         <div className={cn(
-          "absolute bottom-0 left-[20%] w-[60vw] h-[60vw] sm:w-[70vw] sm:h-[70vw] sm:bottom-[-10%] rounded-full blur-[150px] sm:blur-[200px]",
+          "absolute bottom-0 left-0 w-[100vw] h-[100vh] rounded-full blur-[150px] sm:blur-[200px]",
           isDarkMode 
             ? "bg-purple-500/41 sm:bg-purple-500/22" 
-            : "bg-violet-600/75 sm:bg-violet-600/65"
-        )} style={{ animation: 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite', animationDelay: '1s' }} />
+            : "bg-purple-600/90 sm:bg-purple-600/80"
+        )} style={{ 
+          animation: 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite', 
+          animationDelay: '1s',
+          transform: 'translate(20%, 10%)',
+          width: '60vw',
+          height: '60vw',
+          maxWidth: '600px',
+          maxHeight: '600px'
+        }} />
         {/* Grid Overlay */}
         <div className={cn(
           "absolute inset-0 bg-[size:64px_64px] [mask-image:radial-gradient(ellipse_60%_60%_at_50%_50%,#000_70%,transparent_100%)] z-0",
@@ -3199,30 +3243,6 @@ Return ONLY a single JSON object (no array, no wrapper):
 
         <main className="flex-1 flex items-center justify-center px-4 overflow-hidden" style={{ paddingTop: '2.5rem', paddingBottom: '1.5rem' }}>
           <div className="relative w-full max-w-md" style={{ height: 'calc(100vh - 320px)', maxHeight: '550px' }}>
-            {cardStack.slice(1, 3).map((card, idx) => (
-              <div
-                key={card.id + "-bg-" + idx}
-                className="absolute inset-x-0 top-0 h-full"
-                style={{
-                  transform: `scale(${1 - (idx + 1) * 0.05}) translateY(${(idx + 1) * 14}px)`,
-                  zIndex: 10 - idx,
-                  opacity: 1 - (idx + 1) * 0.25,
-                }}
-              >
-                <Card
-                  className={cn(
-                    "h-full overflow-hidden border backdrop-blur-xl",
-                    glassPanelClass,
-                    "shadow-2xl"
-                  )}
-                >
-                  <div className="relative h-[60%]">
-                    <img src={card.imageUrl} alt={card.title} className="w-full h-full object-cover opacity-80" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950/60 to-transparent" />
-                  </div>
-                </Card>
-              </div>
-            ))}
 
             {cardStack[0] && (
               <div
@@ -3243,28 +3263,31 @@ Return ONLY a single JSON object (no array, no wrapper):
               >
                 <Card
                   className={cn(
-                    "h-full overflow-hidden border backdrop-blur-2xl transition-all",
+                    "h-full overflow-hidden border backdrop-blur-2xl",
                     glassPanelClass,
                     "shadow-[0_35px_80px_-40px_rgba(15,23,42,0.8)]",
                     swipeDirection === "right" && "translate-x-[150%] rotate-12 opacity-0",
                     swipeDirection === "left" && "-translate-x-[150%] -rotate-12 opacity-0"
                   )}
+                  style={{
+                    transition: swipeDirection ? "transform 0.6s ease-out, opacity 0.6s ease-out" : (isDragging ? "none" : "transform 0.3s ease-out")
+                  }}
                 >
                   <div className="absolute inset-0 pointer-events-none rounded-[24px] border border-white/20" />
                   <div
                     className="absolute inset-0 bg-green-500/20 z-10 flex items-center justify-center transition-opacity"
-                    style={{ opacity: Math.max(0, dragOffset.x / 120) * 0.8 }}
+                    style={{ opacity: swipeDirection === "right" ? 0.8 : Math.max(0, dragOffset.x / 120) * 0.8 }}
                   >
                     <div className="bg-green-500 text-white px-6 py-2 rounded-full text-2xl font-black tracking-widest rotate-6 border border-white/40">
-                      {getSwipeRightPhrase(currentCategory.name)}
+                      {currentRightPhrase || getSwipeRightPhrase(currentCategory.name)}
                     </div>
                   </div>
                   <div
                     className="absolute inset-0 bg-red-500/20 z-10 flex items-center justify-center transition-opacity"
-                    style={{ opacity: Math.max(0, -dragOffset.x / 120) * 0.8 }}
+                    style={{ opacity: swipeDirection === "left" ? 0.8 : Math.max(0, -dragOffset.x / 120) * 0.8 }}
                   >
                     <div className="bg-red-500 text-white px-6 py-2 rounded-full text-2xl font-black tracking-widest -rotate-6 border border-white/40">
-                      {getSwipeLeftPhrase(currentCategory.name)}
+                      {currentLeftPhrase || getSwipeLeftPhrase(currentCategory.name)}
                     </div>
                   </div>
 
@@ -3308,7 +3331,7 @@ Return ONLY a single JSON object (no array, no wrapper):
           </div>
         </main>
 
-        <footer className="p-4 flex items-center justify-center flex-shrink-0">
+        <footer className="pb-6 pt-4 flex items-center justify-center flex-shrink-0">
             {cardStack.length > 0 ? (
               <div className="flex justify-center gap-6 items-center">
                 <Button
@@ -3337,7 +3360,10 @@ Return ONLY a single JSON object (no array, no wrapper):
                 </Button>
                 {completedCategories.size === 6 ? (
                   <Button
-                    onClick={() => setAppState("questionnaire")}
+                    onClick={() => {
+                      playSound("success");
+                      setAppState("questionnaire");
+                    }}
                     size="lg"
                     className={cn(
                       "size-16 rounded-full flex items-center justify-center text-white hover:scale-105 active:scale-95 transition-all",

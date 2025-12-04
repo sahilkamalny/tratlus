@@ -110,23 +110,46 @@ export const LandingPage = ({ onStart }: { onStart: () => void }) => {
 
         {/* Animated Background Elements */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none" style={{ zIndex: 0 }}>
-            <div className={`absolute -top-[20%] -left-[10%] w-[80vw] h-[80vw] sm:w-[80vw] sm:h-[80vw] sm:-top-40 sm:-left-16 rounded-full blur-[150px] sm:blur-[200px] ${
+            <div className={`absolute top-0 left-0 w-[100vw] h-[100vh] rounded-full blur-[150px] sm:blur-[200px] ${
                 isDarkMode 
                 ? 'bg-fuchsia-500/45 sm:bg-fuchsia-500/26' 
                 : 'bg-fuchsia-600/52 sm:bg-fuchsia-600/45' 
-            }`} style={{ animation: 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite' }} />
+            }`} style={{ 
+              animation: 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+              transform: 'translate(-20%, -20%)',
+              width: '80vw',
+              height: '80vw',
+              maxWidth: '800px',
+              maxHeight: '800px'
+            }} />
             
-            <div className={`absolute top-[30%] -right-[20%] w-[70vw] h-[70vw] sm:w-[70vw] sm:h-[70vw] sm:-right-28 rounded-full blur-[150px] sm:blur-[200px] ${
+            <div className={`absolute top-0 right-0 w-[100vw] h-[100vh] rounded-full blur-[150px] sm:blur-[200px] ${
                 isDarkMode 
                 ? 'bg-blue-500/41 sm:bg-blue-500/22' 
-                : 'bg-white/80 sm:bg-white/70'
-            }`} style={{ animation: 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite', animationDelay: '0.5s' }} />
+                : 'bg-fuchsia-600/52 sm:bg-fuchsia-600/45'
+            }`} style={{ 
+              animation: 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite', 
+              animationDelay: '0.5s',
+              transform: 'translate(20%, 30%)',
+              width: '70vw',
+              height: '70vw',
+              maxWidth: '700px',
+              maxHeight: '700px'
+            }} />
             
-            <div className={`absolute bottom-0 left-[20%] w-[60vw] h-[60vw] sm:w-[70vw] sm:h-[70vw] sm:bottom-[-10%] rounded-full blur-[150px] sm:blur-[200px] ${
+            <div className={`absolute bottom-0 left-0 w-[100vw] h-[100vh] rounded-full blur-[150px] sm:blur-[200px] ${
                 isDarkMode 
                 ? 'bg-purple-500/41 sm:bg-purple-500/22' 
-                : 'bg-violet-600/75 sm:bg-violet-600/65'
-            }`} style={{ animation: 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite', animationDelay: '1s' }} />
+                : 'bg-purple-600/90 sm:bg-purple-600/80'
+            }`} style={{ 
+              animation: 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite', 
+              animationDelay: '1s',
+              transform: 'translate(20%, 10%)',
+              width: '60vw',
+              height: '60vw',
+              maxWidth: '600px',
+              maxHeight: '600px'
+            }} />
             
             {/* Grid Overlay */}
             <div className={`absolute inset-0 bg-[size:64px_64px] [mask-image:radial-gradient(ellipse_60%_60%_at_50%_50%,#000_70%,transparent_100%)] ${isDarkMode ? 'bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)]' : 'bg-[linear-gradient(rgba(255,255,255,0.1)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.1)_1px,transparent_1px)]'}`} />
