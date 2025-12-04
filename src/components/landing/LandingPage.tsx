@@ -35,7 +35,7 @@ export const LandingPage = ({ onStart }: { onStart: () => void }) => {
   const accentBorderClass = isDarkMode ? "border-white/20 text-white/80 bg-white/5" : "border-white/30 text-slate-700 bg-white/10";
 
   return (
-    <div className={`h-screen relative overflow-hidden transition-colors duration-500 ${isDarkMode ? 'bg-slate-950 text-white selection:bg-blue-500 selection:text-white' : 'bg-blue-600 text-white selection:bg-blue-200 selection:text-blue-900'}`}>
+    <div className={`min-h-[100dvh] relative overflow-hidden transition-colors duration-500 pb-[calc(env(safe-area-inset-bottom,0px)+16px)] ${isDarkMode ? 'bg-slate-950 text-white selection:bg-blue-500 selection:text-white' : 'bg-blue-600 text-white selection:bg-blue-200 selection:text-blue-900'}`}>
         
         {/* Settings Menu */}
         <div className="absolute top-6 right-6 z-50">
@@ -110,19 +110,19 @@ export const LandingPage = ({ onStart }: { onStart: () => void }) => {
 
         {/* Animated Background Elements */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none" style={{ zIndex: 0 }}>
-            <div className={`absolute -top-[20%] -left-[10%] w-[80vw] h-[80vw] sm:w-[80vw] sm:h-[80vw] sm:-top-40 sm:-left-16 rounded-full blur-[150px] sm:blur-[200px] ${
+            <div className={`absolute -top-[20%] -left-[10%] w-[120vw] h-[120vw] sm:w-[80vw] sm:h-[80vw] sm:-top-40 sm:-left-16 rounded-full blur-[100px] sm:blur-[200px] ${
                 isDarkMode 
                 ? 'bg-fuchsia-500/45 sm:bg-fuchsia-500/26' 
                 : 'bg-fuchsia-600/52 sm:bg-fuchsia-600/45' 
             }`} style={{ animation: 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite' }} />
             
-            <div className={`absolute top-[30%] -right-[20%] w-[70vw] h-[70vw] sm:w-[70vw] sm:h-[70vw] sm:-right-28 rounded-full blur-[150px] sm:blur-[200px] ${
+            <div className={`absolute top-[30%] -right-[20%] w-[110vw] h-[110vw] sm:w-[70vw] sm:h-[70vw] sm:-right-28 rounded-full blur-[100px] sm:blur-[200px] ${
                 isDarkMode 
                 ? 'bg-blue-500/41 sm:bg-blue-500/22' 
                 : 'bg-blue-500/60 sm:bg-blue-500/40'
             }`} style={{ animation: 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite', animationDelay: '0.5s' }} />
             
-            <div className={`absolute bottom-0 left-[20%] w-[60vw] h-[60vw] sm:w-[70vw] sm:h-[70vw] sm:bottom-[-10%] rounded-full blur-[150px] sm:blur-[200px] ${
+            <div className={`absolute bottom-0 left-[20%] w-[100vw] h-[100vw] sm:w-[70vw] sm:h-[70vw] sm:bottom-[-10%] rounded-full blur-[100px] sm:blur-[200px] ${
                 isDarkMode 
                 ? 'bg-purple-500/41 sm:bg-purple-500/22' 
                 : 'bg-purple-800/95 sm:bg-purple-800/85'

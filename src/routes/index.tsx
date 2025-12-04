@@ -1864,7 +1864,7 @@ Return ONLY a single JSON object (no array, no wrapper):
     : "from-blue-400 via-blue-300 to-blue-600 text-slate-900";
     const glassHeaderClass = isDarkMode
       ? "border-white/10 shadow-[0_20px_60px_-25px_rgba(59,130,246,0.7)] backdrop-blur-md"
-      : "border-white/30 shadow-[0_20px_60px_-25px_rgba(0,0,0,0.9)] backdrop-blur-md";
+      : "border-white/30 shadow-[0_20px_60px_-25px_rgba(0,0,0,1)] backdrop-blur-md";
     const glassPanelClass = isDarkMode
       ? "bg-white/10 border-white/10 text-white"
       : "bg-white/15 border-white/30 text-slate-900";
@@ -3047,7 +3047,7 @@ Return ONLY a single JSON object (no array, no wrapper):
   return (
     <div
       className={cn(
-        "h-screen relative flex flex-col overflow-hidden transition-colors duration-500",
+        "min-h-[100dvh] relative flex flex-col overflow-hidden transition-colors duration-500 pb-[calc(env(safe-area-inset-bottom,0px)+16px)]",
         "bg-gradient-to-br",
         pageBgClass
       )}
@@ -3057,7 +3057,7 @@ Return ONLY a single JSON object (no array, no wrapper):
         {/* Fuchsia blob - top left */}
         <div
           className={cn(
-            "absolute -top-[20%] -left-[10%] w-[80vw] h-[80vw] sm:w-[80vw] sm:h-[80vw] sm:-top-40 sm:-left-16 rounded-full blur-[150px] sm:blur-[200px]",
+            "absolute -top-[20%] -left-[10%] w-[120vw] h-[120vw] sm:w-[80vw] sm:h-[80vw] sm:-top-40 sm:-left-16 rounded-full blur-[100px] sm:blur-[200px]",
             isDarkMode ? "bg-fuchsia-500/45 sm:bg-fuchsia-500/26" : "bg-fuchsia-600/52 sm:bg-fuchsia-600/45"
           )}
           style={{
@@ -3068,8 +3068,8 @@ Return ONLY a single JSON object (no array, no wrapper):
         {/* Blue blob - middle right */}
         <div
           className={cn(
-            "absolute top-[30%] -right-[20%] w-[70vw] h-[70vw] sm:w-[70vw] sm:h-[70vw] sm:-right-28 rounded-full blur-[150px] sm:blur-[200px]",
-            isDarkMode ? "bg-blue-500/41 sm:bg-blue-500/22" : "bg-blue-500/60 sm:bg-blue-500/40"
+            "absolute top-[30%] -right-[20%] w-[110vw] h-[110vw] sm:w-[70vw] sm:h-[70vw] sm:-right-28 rounded-full blur-[100px] sm:blur-[200px]",
+            isDarkMode ? "bg-blue-500/41 sm:bg-blue-500/22" : "bg-blue-500/60 sm:bg-blue-500/40" 
           )}
           style={{
             animation: "pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite",
@@ -3080,7 +3080,7 @@ Return ONLY a single JSON object (no array, no wrapper):
         {/* Purple blob - bottom left */}
         <div
           className={cn(
-            "absolute bottom-0 left-[20%] w-[60vw] h-[60vw] sm:w-[70vw] sm:h-[70vw] sm:bottom-[-10%] rounded-full blur-[150px] sm:blur-[200px]",
+            "absolute bottom-0 left-[20%] w-[100vw] h-[100vw] sm:w-[70vw] sm:h-[70vw] sm:bottom-[-10%] rounded-full blur-[100px] sm:blur-[200px]",
             isDarkMode ? "bg-purple-500/41 sm:bg-purple-500/22" : "bg-purple-800/95 sm:bg-purple-800/85"
           )}
           style={{
@@ -3097,8 +3097,8 @@ Return ONLY a single JSON object (no array, no wrapper):
         )} />
       </div>
 
-      <div className="relative z-10 flex flex-col h-screen">
-        <header className={cn("px-4 pt-4 pb-3 md:px-6 md:pt-6 md:pb-4 relative", glassHeaderClass)} style={{ zIndex: 20, position: 'relative', backgroundColor: isDarkMode ? '#141A29' : '#77B1D4' }}>
+      <div className="relative z-10 flex flex-col h-full">
+        <header className={cn("px-4 pt-4 pb-3 md:px-6 md:pt-6 md:pb-4 relative", glassHeaderClass)} style={{ zIndex: 20, position: 'relative', backgroundColor: isDarkMode ? '#141A29' : '#509BDE' }}>
           <div className="max-w-xl mx-auto space-y-3">
             <div className="flex items-center justify-between gap-3">
               <h1
@@ -3376,7 +3376,7 @@ Return ONLY a single JSON object (no array, no wrapper):
                 </div>
               ) : (
                 <div className="absolute inset-0 flex items-center justify-center rounded-[32px] bg-white/50 dark:bg-slate-900/40 text-slate-600 dark:text-slate-200 font-semibold text-sm z-20 backdrop-blur-lg">
-                  Preparing card...
+                  Preparing cards...
                 </div>
               ))}
           </div>
