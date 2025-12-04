@@ -35,7 +35,7 @@ export const LandingPage = ({ onStart }: { onStart: () => void }) => {
   const accentBorderClass = isDarkMode ? "border-white/20 text-white/80 bg-white/5" : "border-white/30 text-slate-700 bg-white/10";
 
   return (
-    <div className={`min-h-[100dvh] relative overflow-hidden transition-colors duration-500 pb-[calc(env(safe-area-inset-bottom,0px)+16px)] ${isDarkMode ? 'bg-slate-950 text-white selection:bg-blue-500 selection:text-white' : 'bg-blue-600 text-white selection:bg-blue-200 selection:text-blue-900'}`}>
+        <div className={`h-screen relative overflow-hidden transition-colors duration-500 ${isDarkMode ? 'bg-slate-950 text-white selection:bg-blue-500 selection:text-white' : 'bg-blue-600 text-white selection:bg-blue-200 selection:text-blue-900'}`}>
         
         {/* Settings Menu */}
         <div className="absolute top-6 right-6 z-50">

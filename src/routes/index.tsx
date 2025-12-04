@@ -69,6 +69,7 @@ import {
 import { LandingPage } from "@/components/landing/LandingPage";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useSound } from "@/contexts/SoundContext";
+import { RotateDeviceOverlay } from "@/components/ui/RotateDeviceOverlay";
 // ORM imports removed - using local state only for swipe tracking
 import {
   useGenerateItineraryMutation,
@@ -354,6 +355,22 @@ const REQUIRED_SWIPES_MAP: Record<CategoryName, number> = {
 };
 
 function App() {
+  const [isLandscape, setIsLandscape] = useState(false);
+
+  useEffect(() => {
+    const checkOrientation = () => {
+      const isMobile = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+      if (isMobile) {
+        setIsLandscape(window.innerWidth > window.innerHeight);
+      } else {
+        setIsLandscape(false);
+      }
+    };
+    window.addEventListener("resize", checkOrientation);
+    checkOrientation();
+    return () => window.removeEventListener("resize", checkOrientation);
+  }, []);
+
   const { isDarkMode, toggleTheme } = useTheme();
   const { isMuted, setIsMuted, playSound, volume, setVolume } = useSound();
   const [appState, setAppState] = useState<AppState>("landing");
@@ -393,6 +410,11 @@ function App() {
   const [currentLeftPhrase, setCurrentLeftPhrase] = useState<string>("");
   const [topCardReady, setTopCardReady] = useState(true);
   const imageCacheRef = useRef<Record<string, boolean>>({});
+
+  if (isLandscape) {
+    return <RotateDeviceOverlay />;
+  }
+
 
   const preloadImage = useCallback((url?: string) => {
     return new Promise<void>((resolve) => {
@@ -3047,7 +3069,7 @@ Return ONLY a single JSON object (no array, no wrapper):
   return (
     <div
       className={cn(
-        "min-h-[100dvh] relative flex flex-col overflow-hidden transition-colors duration-500 pb-[calc(env(safe-area-inset-bottom,0px)+16px)]",
+        "h-[100svh] relative flex flex-col overflow-hidden transition-colors duration-500",
         "bg-gradient-to-br",
         pageBgClass
       )}
@@ -3382,7 +3404,7 @@ Return ONLY a single JSON object (no array, no wrapper):
           </div>
         </main>
 
-        <footer className="pb-6 pt-4 flex items-center justify-center flex-shrink-0">
+        <footer className="pt-4 flex items-center justify-center flex-shrink-0 pb-[calc(1.5rem+env(safe-area-inset-bottom))]">
             {cardStack.length > 0 ? (
               <div className="flex justify-center gap-6 items-center">
                 <Button
