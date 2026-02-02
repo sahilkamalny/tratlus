@@ -18,6 +18,8 @@
 
 **[💼 LinkedIn](https://linkedin.com/in/sahilkamalny)** · **[🌍 Portfolio](https://sahilkamal.dev)** · **[📧 Contact](mailto:sahilkamal.dev@gmail.com)**
 
+**[📖 Architecture](ARCHITECTURE.md)** · **[✨ Features](FEATURES.md)** · **[🛠️ Tech Stack](TECH_STACK.md)**
+
 </div>
 
 ---
