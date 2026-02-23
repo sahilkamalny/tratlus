@@ -57,7 +57,7 @@ export function GeneratingPage({ isDarkMode, glassPanelClass }: GeneratingPagePr
                  <span className={cn("text-xs font-bold uppercase tracking-wider", isDarkMode ? "text-slate-400" : "text-white/80")}>Travel Tip</span>
               </div>
               <p className={cn("text-sm leading-relaxed", isDarkMode ? "text-slate-200" : "text-white")}>
-                 "Did you know? The best itineraries mix planned activities with unstructured time for spontaneous discovery."
+                 "Did you know? The best itineraries mix planned activities with unstructured time for spontaneous discovery. Be wild."
               </p>
           </div>
 
