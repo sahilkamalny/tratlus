@@ -22,7 +22,7 @@
 
 ## Overview
 
-Tratlus is a mobile-first travel planning application that infers user preferences through a dating app-style swipe interface across 50+ curated destinations, then synthesizes those signals with a structured questionnaire to generate a detailed, hour-by-hour itinerary via the Google Gemini API. Users can edit, reorder, and export their itinerary, with activity locations rendered on an embedded OpenStreetMap.
+Tratlus is a mobile-first travel planning application that infers user preferences through a dating app-style swipe interface across 50+ curated destinations, then synthesizes those signals with a structured questionnaire to generate a detailed, hour-by-hour itinerary via the Google Gemini API. Users can edit, reorder, and export their itinerary, with activity locations rendered on an embedded OpenStreetMap view.
 
 ---
 
